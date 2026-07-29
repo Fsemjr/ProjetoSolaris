@@ -159,8 +159,8 @@ one_shot = true
 [node name="Camera2D" type="Camera2D" parent="."]
 limit_left = 0
 limit_top = 0
-limit_right = 1600
-limit_bottom = 900
+limit_right = 2400
+limit_bottom = 1400
 zoom = Vector2(1, 1)
 enabled = true
 ignore_rotation = true

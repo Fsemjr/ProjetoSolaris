@@ -1759,6 +1759,332 @@ validação manual do jogador antes de receber `[x]`.
 - código provisório limpo;
 - documentação atualizada;
 - protótipo pronto para a próxima fase de desenvolvimento.
+# Marco 15 — Primeira fase jogável
+
+## TASK-041 — Reorganizar o layout da arena como fase
+
+**Status:** `[x]`
+
+### Objetivo
+
+Transformar a arena técnica atual em uma fase com percurso, zonas e progressão visual clara.
+
+### Requisitos
+
+* dividir a fase em áreas reconhecíveis;
+* criar entrada, área inicial, área de combate, altar, memória e saída;
+* usar apenas formas e visuais provisórios;
+* preservar os quatro pontos de spawn;
+* preservar todos os sistemas existentes;
+* impedir que o jogador alcance a saída por caminhos inválidos;
+* manter espaço suficiente para combate e esquiva;
+* manter a fase dentro da duração planejada;
+* não adicionar arte final.
+
+### Critérios de conclusão
+
+* o percurso da fase é compreensível;
+* os locais importantes são distinguíveis;
+* não existem colisões quebradas;
+* inimigos não surgem em paredes;
+* altar, memória e saída continuam acessíveis;
+* câmera funciona em toda a fase;
+* morte e renascimento continuam funcionando;
+* não existem erros.
+
+### Validação
+
+Layout e validação técnica aguardam confirmação manual do jogador antes de
+a tarefa receber `[x]`.
+
+---
+
+## TASK-042 — Criar progressão por encontros
+
+**Status:** `[ ]`
+
+### Objetivo
+
+Organizar os quatro inimigos em encontros progressivos, evitando que todos ataquem ao mesmo tempo desde o início.
+
+### Requisitos
+
+* dividir os inimigos em grupos ou zonas de encontro;
+* primeiro encontro simples;
+* encontro intermediário com maior pressão;
+* encontro final antes da saída;
+* ativar inimigos por entrada em área ou evento;
+* inimigos ainda devem retornar após a morte do jogador;
+* progresso de inimigos derrotados deve continuar funcionando;
+* não alterar o número total de quatro inimigos;
+* não criar novo tipo de inimigo;
+* não alterar balanceamento nesta tarefa.
+
+### Critérios de conclusão
+
+* encontros ativam no momento correto;
+* inimigos não atacam através de toda a fase;
+* restauração após morte funciona;
+* progresso não duplica;
+* o percurso apresenta aumento de dificuldade;
+* não existem erros.
+
+---
+
+## TASK-043 — Criar bloqueios de progressão
+
+**Status:** `[ ]`
+
+### Objetivo
+
+Controlar o avanço entre áreas da fase através dos objetivos já existentes.
+
+### Requisitos
+
+* criar portões ou barreiras provisórias;
+* não usar arte final;
+* primeiro bloqueio abre após o primeiro encontro;
+* área do altar fica acessível no momento planejado;
+* área final exige progressão anterior;
+* saída final continua dependendo dos quatro inimigos, memória e altar;
+* barreiras abertas permanecem abertas após morte;
+* reiniciar a execução restaura as barreiras;
+* não criar salvamento em disco.
+
+### Critérios de conclusão
+
+* jogador não pula etapas;
+* bloqueios apresentam feedback visual;
+* abertura ocorre uma única vez;
+* morte não fecha bloqueios já concluídos;
+* reset restaura estado inicial;
+* não existem erros.
+
+---
+
+## TASK-044 — Adicionar texto narrativo à memória
+
+**Status:** `[ ]`
+
+### Objetivo
+
+Dar função narrativa real ao fragmento de memória existente.
+
+### Requisitos
+
+* criar um texto curto ligado à história de Solares;
+* mostrar o texto ao coletar a memória;
+* bloquear controles durante a leitura;
+* permitir avançar ou fechar com uma tecla;
+* registrar a memória como coletada somente uma vez;
+* preservar a memória após morte;
+* não criar sistema completo de diálogo;
+* não adicionar voz ou áudio;
+* não criar múltiplas memórias nesta tarefa.
+
+### Critérios de conclusão
+
+* texto aparece na coleta;
+* texto é legível;
+* jogador consegue fechar;
+* controles retornam corretamente;
+* memória não reaparece após morte;
+* não existem erros.
+
+---
+
+## TASK-045 — Criar tutorial contextual
+
+**Status:** `[ ]`
+
+### Objetivo
+
+Ensinar os controles e sistemas durante o percurso da fase sem criar uma tela longa de tutorial.
+
+### Requisitos
+
+* ensinar movimento próximo ao início;
+* ensinar ataque antes do primeiro inimigo;
+* ensinar esquiva durante ou antes do primeiro combate;
+* ensinar interação próximo à memória ou ao altar;
+* ensinar absorção quando surgir o primeiro núcleo;
+* mensagens devem desaparecer após uso ou progresso;
+* não repetir mensagens já concluídas durante a mesma execução;
+* reset da execução permite mostrar o tutorial novamente;
+* não bloquear excessivamente o jogador.
+
+### Critérios de conclusão
+
+* jogador entende os controles sem consultar documentação;
+* mensagens aparecem no momento adequado;
+* mensagens não ficam presas;
+* morte e respawn não duplicam tutoriais;
+* não existem erros.
+
+---
+
+## TASK-046 — Implementar pausa funcional
+
+**Status:** `[ ]`
+
+### Objetivo
+
+Fazer a ação Esc abrir e fechar um menu simples de pausa.
+
+### Requisitos
+
+* utilizar a ação de pausa já mapeada;
+* abrir com Esc;
+* fechar com Esc;
+* bloquear gameplay enquanto pausado;
+* manter HUD e menu responsivos;
+* incluir opções provisórias:
+  * continuar;
+  * reiniciar execução;
+  * sair para o desktop;
+* pedir confirmação antes de reiniciar ou sair;
+* não quebrar timers após continuar;
+* não interferir com tela de morte ou conclusão.
+
+### Critérios de conclusão
+
+* menu abre e fecha;
+* gameplay pausa corretamente;
+* continuar não quebra estados;
+* reinício funciona;
+* saída funciona;
+* não existem erros.
+
+---
+
+## TASK-047 — Adicionar áudio provisório
+
+**Status:** `[ ]`
+
+### Objetivo
+
+Adicionar feedback sonoro temporário para validar a leitura das ações.
+
+### Requisitos
+
+* utilizar apenas sons próprios, livres ou provisórios devidamente identificados;
+* som de ataque;
+* som de acerto;
+* som de dano no jogador;
+* som de absorção;
+* som de ativação do altar;
+* som de morte;
+* som de desbloqueio da saída;
+* música ambiente provisória opcional;
+* controlar volumes básicos;
+* evitar sons acumulados ou excessivamente altos;
+* documentar origem e licença dos arquivos.
+
+### Critérios de conclusão
+
+* ações possuem feedback sonoro;
+* volumes são consistentes;
+* sons não duplicam;
+* morte e respawn não deixam áudio preso;
+* não existem erros.
+
+---
+
+## TASK-048 — Preparar integração de arte
+
+**Status:** `[ ]`
+
+### Objetivo
+
+Organizar cenas e recursos para que os visuais provisórios possam ser substituídos pela arte produzida pela equipe.
+
+### Requisitos
+
+* listar todos os assets necessários;
+* definir dimensões aproximadas;
+* definir pivôs e orientações;
+* definir nomes de arquivos;
+* definir animações necessárias;
+* separar visual de lógica e colisão;
+* preservar scripts ao trocar sprites;
+* criar documento ART_REQUIREMENTS.md;
+* não produzir arte final nesta tarefa.
+
+### Critérios de conclusão
+
+* lista de assets está completa;
+* cenas aceitam substituição visual;
+* colisões não dependem do desenho provisório;
+* nomes e pastas estão padronizados;
+* artistas conseguem trabalhar sem editar scripts;
+* não existem erros.
+
+---
+
+## TASK-049 — Integrar primeira passagem de arte
+
+**Status:** `[ ]`
+
+### Objetivo
+
+Substituir os visuais provisórios pelos primeiros assets entregues pela equipe.
+
+### Requisitos
+
+* importar assets sem alterar gameplay;
+* configurar filtros e compressão adequados ao estilo escolhido;
+* ajustar pivôs;
+* configurar animações disponíveis;
+* manter colisões coerentes;
+* preservar escala visual entre personagens e ambiente;
+* não alterar balanceamento;
+* registrar assets ainda ausentes.
+
+### Critérios de conclusão
+
+* assets aparecem corretamente;
+* animações não quebram lógica;
+* colisões continuam funcionando;
+* não existem referências quebradas;
+* desempenho permanece estável;
+* não existem erros.
+
+---
+
+## TASK-050 — Testar primeira fase completa
+
+**Status:** `[ ]`
+
+### Objetivo
+
+Validar a primeira fase do início ao fim após layout, progressão, narrativa, tutorial, pausa, áudio e integração visual.
+
+### Fluxo obrigatório
+
+```text
+iniciar execução
+↓
+aprender movimento
+↓
+entrar no primeiro encontro
+↓
+usar ataque e esquiva
+↓
+absorver núcleo
+↓
+encontrar memória
+↓
+ativar altar
+↓
+avançar pelos encontros
+↓
+derrotar os quatro inimigos
+↓
+liberar saída
+↓
+concluir a fase
+↓
+reiniciar execução
 
 # 17. Marco 14 — Protótipo concluído
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/characters/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/basic_returned/basic_returned.tscn" id="2_enemy"]
@@ -9,10 +9,13 @@
 [ext_resource type="PackedScene" path="res://scenes/objects/arena_exit/arena_exit.tscn" id="7_exit"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_horizontal"]
-size = Vector2(1600, 40)
+size = Vector2(2400, 40)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_vertical"]
-size = Vector2(40, 900)
+size = Vector2(40, 1400)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_divider"]
+size = Vector2(1650, 40)
 
 [node name="PrototypeArena" type="Node2D"]
 script = ExtResource("3_arena")
@@ -20,88 +23,159 @@ script = ExtResource("3_arena")
 [node name="Environment" type="Node2D" parent="."]
 
 [node name="Floor" type="Polygon2D" parent="Environment"]
-z_index = -1
+z_index = -2
 color = Color(0.075, 0.09, 0.11, 1)
-polygon = PackedVector2Array(0, 0, 1600, 0, 1600, 900, 0, 900)
+polygon = PackedVector2Array(0, 0, 2400, 0, 2400, 1400, 0, 1400)
+
+[node name="ZoneFloors" type="Node2D" parent="Environment"]
+
+[node name="EntranceZone" type="Polygon2D" parent="Environment/ZoneFloors"]
+z_index = -1
+color = Color(0.11, 0.15, 0.19, 1)
+polygon = PackedVector2Array(40, 970, 470, 970, 470, 1360, 40, 1360)
+
+[node name="FirstEncounterZone" type="Polygon2D" parent="Environment/ZoneFloors"]
+z_index = -1
+color = Color(0.18, 0.12, 0.15, 1)
+polygon = PackedVector2Array(470, 970, 900, 970, 900, 1360, 470, 1360)
+
+[node name="MemoryZone" type="Polygon2D" parent="Environment/ZoneFloors"]
+z_index = -1
+color = Color(0.09, 0.18, 0.21, 1)
+polygon = PackedVector2Array(900, 970, 1250, 970, 1250, 1360, 900, 1360)
+
+[node name="AltarZone" type="Polygon2D" parent="Environment/ZoneFloors"]
+z_index = -1
+color = Color(0.19, 0.17, 0.1, 1)
+polygon = PackedVector2Array(1250, 970, 1650, 970, 1650, 1360, 1250, 1360)
+
+[node name="LowerTransitionZone" type="Polygon2D" parent="Environment/ZoneFloors"]
+z_index = -1
+color = Color(0.12, 0.13, 0.18, 1)
+polygon = PackedVector2Array(1650, 970, 2360, 970, 2360, 1360, 1650, 1360)
+
+[node name="IntermediateEncounterZone" type="Polygon2D" parent="Environment/ZoneFloors"]
+z_index = -1
+color = Color(0.15, 0.11, 0.19, 1)
+polygon = PackedVector2Array(40, 470, 2360, 470, 2360, 930, 40, 930)
+
+[node name="FinalEncounterZone" type="Polygon2D" parent="Environment/ZoneFloors"]
+z_index = -1
+color = Color(0.2, 0.1, 0.13, 1)
+polygon = PackedVector2Array(40, 40, 1800, 40, 1800, 430, 40, 430)
+
+[node name="ExitZone" type="Polygon2D" parent="Environment/ZoneFloors"]
+z_index = -1
+color = Color(0.08, 0.18, 0.24, 1)
+polygon = PackedVector2Array(1800, 40, 2360, 40, 2360, 430, 1800, 430)
+
+[node name="ZoneMarkers" type="Node2D" parent="Environment"]
+
+[node name="RouteGuide" type="Line2D" parent="Environment/ZoneMarkers"]
+z_index = -1
+points = PackedVector2Array(220, 1180, 750, 1180, 1050, 1180, 1450, 1150, 2000, 1120, 2000, 700, 1500, 700, 500, 700, 500, 240, 1750, 240, 2180, 180)
+width = 4.0
+default_color = Color(0.35, 0.48, 0.58, 0.3)
+antialiased = true
 
 [node name="Walls" type="Node2D" parent="Environment"]
 
 [node name="TopWall" type="StaticBody2D" parent="Environment/Walls"]
-position = Vector2(800, 20)
+position = Vector2(1200, 20)
 
 [node name="Visual" type="Polygon2D" parent="Environment/Walls/TopWall"]
 color = Color(0.24, 0.16, 0.18, 1)
-polygon = PackedVector2Array(-800, -20, 800, -20, 800, 20, -800, 20)
+polygon = PackedVector2Array(-1200, -20, 1200, -20, 1200, 20, -1200, 20)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/TopWall"]
 shape = SubResource("RectangleShape2D_horizontal")
 
 [node name="BottomWall" type="StaticBody2D" parent="Environment/Walls"]
-position = Vector2(800, 880)
+position = Vector2(1200, 1380)
 
 [node name="Visual" type="Polygon2D" parent="Environment/Walls/BottomWall"]
 color = Color(0.24, 0.16, 0.18, 1)
-polygon = PackedVector2Array(-800, -20, 800, -20, 800, 20, -800, 20)
+polygon = PackedVector2Array(-1200, -20, 1200, -20, 1200, 20, -1200, 20)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/BottomWall"]
 shape = SubResource("RectangleShape2D_horizontal")
 
 [node name="LeftWall" type="StaticBody2D" parent="Environment/Walls"]
-position = Vector2(20, 450)
+position = Vector2(20, 700)
 
 [node name="Visual" type="Polygon2D" parent="Environment/Walls/LeftWall"]
 color = Color(0.24, 0.16, 0.18, 1)
-polygon = PackedVector2Array(-20, -450, 20, -450, 20, 450, -20, 450)
+polygon = PackedVector2Array(-20, -700, 20, -700, 20, 700, -20, 700)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/LeftWall"]
 shape = SubResource("RectangleShape2D_vertical")
 
 [node name="RightWall" type="StaticBody2D" parent="Environment/Walls"]
-position = Vector2(1580, 450)
+position = Vector2(2380, 700)
 
 [node name="Visual" type="Polygon2D" parent="Environment/Walls/RightWall"]
 color = Color(0.24, 0.16, 0.18, 1)
-polygon = PackedVector2Array(-20, -450, 20, -450, 20, 450, -20, 450)
+polygon = PackedVector2Array(-20, -700, 20, -700, 20, 700, -20, 700)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/RightWall"]
 shape = SubResource("RectangleShape2D_vertical")
 
+[node name="LowerDivider" type="StaticBody2D" parent="Environment/Walls"]
+position = Vector2(825, 950)
+
+[node name="Visual" type="Polygon2D" parent="Environment/Walls/LowerDivider"]
+color = Color(0.24, 0.16, 0.18, 1)
+polygon = PackedVector2Array(-825, -20, 825, -20, 825, 20, -825, 20)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/LowerDivider"]
+shape = SubResource("RectangleShape2D_divider")
+
+[node name="UpperDivider" type="StaticBody2D" parent="Environment/Walls"]
+position = Vector2(1575, 450)
+
+[node name="Visual" type="Polygon2D" parent="Environment/Walls/UpperDivider"]
+color = Color(0.24, 0.16, 0.18, 1)
+polygon = PackedVector2Array(-825, -20, 825, -20, 825, 20, -825, 20)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/UpperDivider"]
+shape = SubResource("RectangleShape2D_divider")
+
 [node name="Objects" type="Node2D" parent="."]
 
 [node name="RespawnAltar" parent="Objects" instance=ExtResource("5_altar")]
-position = Vector2(400, 250)
+position = Vector2(1450, 1150)
 
 [node name="MemoryFragment" parent="Objects" instance=ExtResource("6_memory")]
-position = Vector2(650, 260)
+position = Vector2(1050, 1180)
 
 [node name="ArenaExit" parent="Objects" instance=ExtResource("7_exit")]
-position = Vector2(1420, 120)
+position = Vector2(2180, 180)
 
 [node name="Entities" type="Node2D" parent="."]
 
 [node name="Player" parent="Entities" instance=ExtResource("1_player")]
-position = Vector2(800, 450)
+position = Vector2(220, 1180)
 
 [node name="BasicReturned" parent="Entities" instance=ExtResource("2_enemy")]
-position = Vector2(1100, 450)
+position = Vector2(750, 1160)
 spawn_id = &"enemy_spawn_01"
 
 [node name="BasicReturned2" parent="Entities" instance=ExtResource("2_enemy")]
-position = Vector2(1040, 220)
+position = Vector2(1800, 700)
 spawn_id = &"enemy_spawn_02"
 
 [node name="BasicReturned3" parent="Entities" instance=ExtResource("2_enemy")]
-position = Vector2(1040, 680)
+position = Vector2(1250, 700)
 spawn_id = &"enemy_spawn_03"
 
 [node name="BasicReturned4" parent="Entities" instance=ExtResource("2_enemy")]
-position = Vector2(520, 680)
+position = Vector2(1750, 240)
 spawn_id = &"enemy_spawn_04"
 
 [node name="Pickups" type="Node2D" parent="."]
 
 [node name="PlayerSpawn" type="Marker2D" parent="."]
-position = Vector2(800, 450)
+position = Vector2(220, 1180)
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
