@@ -1,0 +1,168 @@
+[gd_scene load_steps=13 format=3]
+
+[ext_resource type="Script" path="res://scripts/characters/player/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://systems/health_component.gd" id="2_health"]
+[ext_resource type="Script" path="res://scripts/characters/player/player_combat.gd" id="3_combat"]
+[ext_resource type="Script" path="res://systems/hitbox_component.gd" id="4_hitbox"]
+[ext_resource type="Script" path="res://systems/hurtbox_component.gd" id="5_hurtbox"]
+[ext_resource type="Script" path="res://systems/corruption_component.gd" id="6_corruption"]
+[ext_resource type="Script" path="res://scripts/characters/player/player_corruption.gd" id="7_player_corruption"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 20.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_attack"]
+size = Vector2(82, 60)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_hurtbox"]
+radius = 22.0
+
+[sub_resource type="Animation" id="Animation_scythe_attack"]
+resource_name = "attack"
+length = 1.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("ScytheVisual:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [-1.0471976, 1.2217305]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("AttackHitbox:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [-1.0471976, 1.2217305]
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.27, 0.73),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [true],
+"method": &"_set_hitbox_active"
+}, {
+"args": [false],
+"method": &"_set_hitbox_active"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_scythe"]
+_data = {
+&"attack": SubResource("Animation_scythe_attack")
+}
+
+[node name="Player" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 5
+script = ExtResource("1_player")
+
+[node name="Visuals" type="Node2D" parent="."]
+
+[node name="BodyVisual" type="Polygon2D" parent="Visuals"]
+color = Color(0.82, 0.74, 0.48, 1)
+polygon = PackedVector2Array(0, -24, 18, -12, 18, 16, 0, 24, -18, 16, -18, -12)
+
+[node name="ScythePivot" type="Node2D" parent="Visuals"]
+script = ExtResource("3_combat")
+
+[node name="ScytheVisual" type="Line2D" parent="Visuals/ScythePivot"]
+points = PackedVector2Array(16, 8, 56, 8, 70, 0, 74, -14, 70, -28, 60, -40, 46, -47, 30, -49)
+width = 6.0
+default_color = Color(0.72, 0.78, 0.82, 1)
+antialiased = true
+
+[node name="ScytheTrail" type="Line2D" parent="Visuals/ScythePivot"]
+visible = false
+z_index = -1
+points = PackedVector2Array(24, 42, 48, 32, 66, 14, 72, -10, 65, -34, 46, -51, 22, -58)
+width = 10.0
+default_color = Color(0.52, 0.76, 0.9, 0.48)
+antialiased = true
+
+[node name="AttackHitbox" type="Area2D" parent="Visuals/ScythePivot"]
+position = Vector2(48, -14)
+collision_layer = 8
+collision_mask = 64
+monitoring = false
+monitorable = false
+script = ExtResource("4_hitbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Visuals/ScythePivot/AttackHitbox"]
+shape = SubResource("RectangleShape2D_attack")
+disabled = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Visuals/ScythePivot"]
+libraries = {
+&"": SubResource("AnimationLibrary_scythe")
+}
+
+[node name="BodyCollision" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="Hurtbox" type="Area2D" parent="."]
+collision_layer = 32
+collision_mask = 16
+script = ExtResource("5_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hurtbox"]
+shape = SubResource("CircleShape2D_hurtbox")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("2_health")
+maximum_health = 100.0
+
+[node name="CorruptionComponent" type="Node" parent="."]
+script = ExtResource("6_corruption")
+maximum_corrupted_light = 100.0
+maximum_instability = 100.0
+
+[node name="PlayerCorruption" type="Node" parent="."]
+script = ExtResource("7_player_corruption")
+
+[node name="CollapseDamageTimer" type="Timer" parent="."]
+wait_time = 1.0
+one_shot = false
+autostart = false
+
+[node name="AttackCooldown" type="Timer" parent="."]
+wait_time = 0.5
+one_shot = true
+
+[node name="DodgeDuration" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+
+[node name="DodgeCooldown" type="Timer" parent="."]
+wait_time = 1.0
+one_shot = true
+
+[node name="RespawnDelay" type="Timer" parent="."]
+wait_time = 1.5
+one_shot = true
+
+[node name="Camera2D" type="Camera2D" parent="."]
+limit_left = 0
+limit_top = 0
+limit_right = 1600
+limit_bottom = 900
+zoom = Vector2(1, 1)
+enabled = true
+ignore_rotation = true
+position_smoothing_enabled = true
+position_smoothing_speed = 5.0
