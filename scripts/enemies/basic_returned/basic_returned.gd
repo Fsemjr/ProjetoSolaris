@@ -15,6 +15,7 @@ enum State {
 @export var death_removal_delay: float = 0.5
 @export_range(0.1, 0.2, 0.01) var damage_flash_duration: float = 0.15
 @export var corrupted_light_core_scene: PackedScene
+@export var spawn_id: StringName = &""
 
 @onready var visuals: Node2D = $Visuals
 @onready var body_collision: CollisionShape2D = $BodyCollision

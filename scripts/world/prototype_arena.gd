@@ -9,8 +9,11 @@ extends Node2D
 
 var _common_enemy_spawns: Array[Dictionary] = []
 
+const REQUIRED_ENEMY_SPAWN_COUNT: int = 4
+
 
 func _ready() -> void:
+	_connect_objective_signals()
 	_configure_player_spawn()
 	_bind_player_hud()
 	if player.has_signal(&"player_died"):
@@ -31,10 +34,14 @@ func _ready() -> void:
 		var memory: MemoryFragment = object as MemoryFragment
 		if memory != null and not memory.is_queued_for_deletion():
 			player_hud.observe_memory(memory)
+		var arena_exit: ArenaExit = object as ArenaExit
+		if arena_exit != null:
+			player_hud.observe_arena_exit(arena_exit)
 
 	_register_common_enemy_spawns()
 	for entity: Node in entities.get_children():
 		_connect_enemy_signals(entity)
+	_evaluate_arena_objective()
 
 
 func clear_corrupted_light_cores() -> void:
@@ -59,6 +66,7 @@ func _on_player_died() -> void:
 
 
 func _register_common_enemy_spawns() -> void:
+	var registered_spawn_ids: Array[StringName] = []
 	for entity: Node in entities.get_children():
 		if not entity.is_in_group(&"common_enemies"):
 			continue
@@ -66,13 +74,22 @@ func _register_common_enemy_spawns() -> void:
 		if enemy == null or enemy.scene_file_path.is_empty():
 			push_error("Common enemy requires a reusable scene.")
 			continue
+		var spawn_id: StringName = enemy.get(&"spawn_id") as StringName
+		if spawn_id == &"":
+			push_error("Common enemy requires a stable spawn_id.")
+			continue
+		if registered_spawn_ids.has(spawn_id):
+			push_error("Common enemy spawn_id must be unique.")
+			continue
 		var enemy_scene: PackedScene = load(
 			enemy.scene_file_path
 		) as PackedScene
 		if enemy_scene == null:
 			push_error("Could not load common enemy scene.")
 			continue
+		registered_spawn_ids.append(spawn_id)
 		_common_enemy_spawns.append({
+			"id": spawn_id,
 			"scene": enemy_scene,
 			"transform": enemy.global_transform,
 			"enemy": enemy,
@@ -96,6 +113,7 @@ func restore_common_enemies() -> void:
 			if enemy == null:
 				push_error("Common enemy scene must instantiate Node2D.")
 				continue
+			enemy.set(&"spawn_id", spawn.get("id", &""))
 			entities.add_child(enemy)
 			spawn["enemy"] = enemy
 			_connect_enemy_signals(enemy)
@@ -148,6 +166,10 @@ func _bind_player_hud() -> void:
 func _on_enemy_died(enemy: Node2D, death_position: Vector2) -> void:
 	if not is_instance_valid(enemy):
 		return
+	var spawn_id: StringName = _find_spawn_id_for_enemy(enemy)
+	if spawn_id != &"":
+		if GameState.register_defeated_enemy_spawn(spawn_id):
+			_evaluate_arena_objective()
 	if not enemy.has_method(&"claim_corrupted_light_core_scene"):
 		return
 
@@ -170,3 +192,48 @@ func _on_enemy_died(enemy: Node2D, death_position: Vector2) -> void:
 	pickups.add_child(core)
 	core.global_position = death_position
 	player_hud.observe_core(core)
+
+
+func _find_spawn_id_for_enemy(enemy: Node2D) -> StringName:
+	for spawn: Dictionary in _common_enemy_spawns:
+		var enemy_value: Variant = spawn.get("enemy")
+		if is_instance_valid(enemy_value) and enemy_value == enemy:
+			return spawn.get("id", &"") as StringName
+	return &""
+
+
+func _connect_objective_signals() -> void:
+	if not GameState.memory_collected.is_connected(_on_objective_state_changed):
+		GameState.memory_collected.connect(_on_objective_state_changed)
+	if not GameState.respawn_point_changed.is_connected(
+		_on_respawn_point_changed
+	):
+		GameState.respawn_point_changed.connect(_on_respawn_point_changed)
+
+
+func _evaluate_arena_objective() -> void:
+	GameState.evaluate_arena_objective(REQUIRED_ENEMY_SPAWN_COUNT)
+
+
+func _on_objective_state_changed(_memory_id: StringName) -> void:
+	_evaluate_arena_objective()
+
+
+func _on_respawn_point_changed(
+	_position: Vector2,
+	_altar_id: StringName
+) -> void:
+	_evaluate_arena_objective()
+
+
+func _exit_tree() -> void:
+	if GameState == null or not is_instance_valid(GameState):
+		return
+	if GameState.memory_collected.is_connected(_on_objective_state_changed):
+		GameState.memory_collected.disconnect(_on_objective_state_changed)
+	if GameState.respawn_point_changed.is_connected(
+		_on_respawn_point_changed
+	):
+		GameState.respawn_point_changed.disconnect(
+			_on_respawn_point_changed
+		)

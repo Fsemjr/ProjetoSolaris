@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/characters/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/basic_returned/basic_returned.tscn" id="2_enemy"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/player_hud.tscn" id="4_hud"]
 [ext_resource type="PackedScene" path="res://scenes/objects/respawn_altar/respawn_altar.tscn" id="5_altar"]
 [ext_resource type="PackedScene" path="res://scenes/objects/memory_fragment/memory_fragment.tscn" id="6_memory"]
+[ext_resource type="PackedScene" path="res://scenes/objects/arena_exit/arena_exit.tscn" id="7_exit"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_horizontal"]
 size = Vector2(1600, 40)
@@ -73,6 +74,9 @@ position = Vector2(400, 250)
 [node name="MemoryFragment" parent="Objects" instance=ExtResource("6_memory")]
 position = Vector2(650, 260)
 
+[node name="ArenaExit" parent="Objects" instance=ExtResource("7_exit")]
+position = Vector2(1420, 120)
+
 [node name="Entities" type="Node2D" parent="."]
 
 [node name="Player" parent="Entities" instance=ExtResource("1_player")]
@@ -80,15 +84,19 @@ position = Vector2(800, 450)
 
 [node name="BasicReturned" parent="Entities" instance=ExtResource("2_enemy")]
 position = Vector2(1100, 450)
+spawn_id = &"enemy_spawn_01"
 
 [node name="BasicReturned2" parent="Entities" instance=ExtResource("2_enemy")]
 position = Vector2(1040, 220)
+spawn_id = &"enemy_spawn_02"
 
 [node name="BasicReturned3" parent="Entities" instance=ExtResource("2_enemy")]
 position = Vector2(1040, 680)
+spawn_id = &"enemy_spawn_03"
 
 [node name="BasicReturned4" parent="Entities" instance=ExtResource("2_enemy")]
 position = Vector2(520, 680)
+spawn_id = &"enemy_spawn_04"
 
 [node name="Pickups" type="Node2D" parent="."]
 

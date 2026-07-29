@@ -7,6 +7,7 @@ enum MovementState {
 	NORMAL,
 	DODGING,
 	DEAD,
+	COMPLETED,
 }
 
 @export var movement_speed: float = 220.0
@@ -35,7 +36,10 @@ func _ready() -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	if movement_state == MovementState.DEAD:
+	if (
+		movement_state == MovementState.DEAD
+		or movement_state == MovementState.COMPLETED
+	):
 		velocity = Vector2.ZERO
 		return
 
@@ -107,6 +111,18 @@ func is_dead_state() -> bool:
 	return movement_state == MovementState.DEAD
 
 
+func enter_completed_state() -> void:
+	dodge_duration_timer.stop()
+	dodge_cooldown_timer.stop()
+	movement_state = MovementState.COMPLETED
+	velocity = Vector2.ZERO
+	set_physics_process(false)
+
+
+func is_completed_state() -> bool:
+	return movement_state == MovementState.COMPLETED
+
+
 func _can_start_dodge() -> bool:
 	return movement_state == MovementState.NORMAL
 
@@ -133,4 +149,3 @@ func _finish_dodge() -> void:
 
 func _on_dodge_duration_timeout() -> void:
 	_finish_dodge()
-

@@ -5,6 +5,7 @@ enum State {
 	IDLE,
 	ABSORBING,
 	DEAD,
+	COMPLETED,
 }
 
 @onready var player: CharacterBody2D = get_parent() as CharacterBody2D
@@ -85,6 +86,23 @@ func exit_dead_state() -> void:
 	set_process(true)
 
 
+func enter_completed_state() -> void:
+	if current_state == State.COMPLETED:
+		return
+
+	var core_to_cancel: CorruptedLightCore = active_core
+	current_state = State.COMPLETED
+	set_process(false)
+	collapse_damage_timer.stop()
+	hurtbox_component.incoming_damage_multiplier = 1.0
+	player.velocity = Vector2.ZERO
+
+	if core_to_cancel != null and is_instance_valid(core_to_cancel):
+		_disconnect_core_signals(core_to_cancel)
+		core_to_cancel.cancel_absorption(player)
+	active_core = null
+
+
 func _try_start_absorption() -> void:
 	if (
 		current_state != State.IDLE
@@ -132,7 +150,11 @@ func _block_player_actions() -> void:
 
 func _restore_player_actions() -> void:
 	player.velocity = Vector2.ZERO
-	if current_state == State.DEAD or health_component.is_dead:
+	if (
+		current_state == State.DEAD
+		or current_state == State.COMPLETED
+		or health_component.is_dead
+	):
 		return
 	player.set_physics_process(_was_player_physics_processing)
 	combat_controller.set_process(_was_combat_processing)

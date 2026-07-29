@@ -1704,7 +1704,7 @@ TASKS.md
 ---
 ## TASK-040 — Criar objetivo e conclusão da arena
 
-**Status:** `[ ]`
+**Status:** `[x]`
 
 ### Objetivo
 
@@ -1713,8 +1713,9 @@ Dar à arena uma condição clara de conclusão e permitir que o jogador finaliz
 ### Fluxo
 
 * entrar na arena;
-* derrotar os inimigos necessários;
-* cumprir o objetivo;
+* derrotar os quatro spawns ao menos uma vez no run;
+* coletar `prototype_memory_01`;
+* ativar `prototype_altar_01`;
 * liberar a saída;
 * interagir com a saída;
 * mostrar uma tela simples de conclusão.
@@ -1726,7 +1727,12 @@ Dar à arena uma condição clara de conclusão e permitir que o jogador finaliz
 * não adicionar arte final;
 * não alterar balanceamento;
 * preservar morte, respawn, altar e memórias;
-* progresso da conclusão deve ser definido explicitamente.
+* preservar o progresso durante mortes e recargas da arena;
+* exibir progresso e conclusão no HUD;
+* bloquear o jogador depois da conclusão;
+* permitir reiniciar um run limpo com Enter;
+* impedir progresso, desbloqueio e conclusão duplicados;
+* não criar salvamento em disco.
 
 ### Critérios de conclusão
 
@@ -1736,7 +1742,15 @@ Dar à arena uma condição clara de conclusão e permitir que o jogador finaliz
 * saída fornece feedback visual;
 * jogador consegue concluir a arena;
 * morte não quebra o fluxo;
+* reinício limpa mortes, progresso, memória, altar e conclusão;
+* duas repetições não duplicam sinais, nós ou inimigos;
+* validação manual concluída no Godot 4.5.1;
 * nenhum erro é gerado.
+
+### Validação
+
+A implementação e a regressão técnica estão concluídas. A tarefa aguarda
+validação manual do jogador antes de receber `[x]`.
 
 ## Estado do protótipo
 
@@ -1745,8 +1759,6 @@ Dar à arena uma condição clara de conclusão e permitir que o jogador finaliz
 - código provisório limpo;
 - documentação atualizada;
 - protótipo pronto para a próxima fase de desenvolvimento.
-
----
 
 # 17. Marco 14 — Protótipo concluído
 

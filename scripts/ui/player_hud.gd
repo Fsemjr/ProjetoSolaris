@@ -31,6 +31,20 @@ extends Control
 @onready var interaction_prompt: Label = $InteractionPrompt
 @onready var death_overlay: ColorRect = $DeathOverlay
 @onready var death_message: Label = $DeathOverlay/DeathMessage
+@onready var objective_title: Label = $ObjectivePanel/ObjectiveContent/Title
+@onready var objective_enemies: Label = (
+	$ObjectivePanel/ObjectiveContent/Enemies
+)
+@onready var objective_memory: Label = (
+	$ObjectivePanel/ObjectiveContent/Memory
+)
+@onready var objective_altar: Label = (
+	$ObjectivePanel/ObjectiveContent/Altar
+)
+@onready var objective_summary: Label = (
+	$ObjectivePanel/ObjectiveContent/Summary
+)
+@onready var completion_overlay: ColorRect = $CompletionOverlay
 
 var health_component: HealthComponent = null
 var corruption_component: CorruptionComponent = null
@@ -49,11 +63,18 @@ var _active_prompt_altar: RespawnAltar = null
 var _observed_memories: Array[MemoryFragment] = []
 var _available_memories: Array[MemoryFragment] = []
 var _active_prompt_memory: MemoryFragment = null
+var _observed_arena_exits: Array[ArenaExit] = []
+var _available_arena_exits: Array[ArenaExit] = []
+var _active_prompt_arena_exit: ArenaExit = null
+var _restart_requested: bool = false
+
+const REQUIRED_ENEMY_SPAWN_COUNT: int = 4
 
 
 func _ready() -> void:
 	death_overlay.modulate.a = 0.0
 	death_overlay.hide()
+	completion_overlay.hide()
 	if GameState != null and is_instance_valid(GameState):
 		if not GameState.death_count_changed.is_connected(
 			_on_death_count_changed
@@ -61,7 +82,37 @@ func _ready() -> void:
 			GameState.death_count_changed.connect(
 				_on_death_count_changed
 			)
+		if not GameState.objective_progress_changed.is_connected(
+			_on_objective_progress_changed
+		):
+			GameState.objective_progress_changed.connect(
+				_on_objective_progress_changed
+			)
+		if not GameState.arena_exit_unlocked.is_connected(
+			_on_arena_exit_unlocked
+		):
+			GameState.arena_exit_unlocked.connect(
+				_on_arena_exit_unlocked
+			)
+		if not GameState.arena_completed.is_connected(
+			_on_arena_completed
+		):
+			GameState.arena_completed.connect(_on_arena_completed)
 		_on_death_count_changed(GameState.death_count)
+		_on_objective_progress_changed(
+			GameState.get_defeated_enemy_spawn_count(),
+			REQUIRED_ENEMY_SPAWN_COUNT,
+			GameState.has_memory(&"prototype_memory_01"),
+			(
+				GameState.has_respawn_point
+				and GameState.active_altar_id
+				== &"prototype_altar_01"
+			)
+		)
+		if GameState.arena_exit_is_unlocked:
+			_on_arena_exit_unlocked()
+		if GameState.arena_is_completed:
+			_on_arena_completed()
 	else:
 		push_error("PlayerHUD requires the GameState Autoload.")
 	_hide_interaction_prompt()
@@ -289,6 +340,28 @@ func observe_memory(memory: MemoryFragment) -> void:
 		_on_memory_interaction_available(memory)
 
 
+func observe_arena_exit(arena_exit: ArenaExit) -> void:
+	if (
+		arena_exit == null
+		or not is_instance_valid(arena_exit)
+		or _observed_arena_exits.has(arena_exit)
+	):
+		return
+	_observed_arena_exits.append(arena_exit)
+	arena_exit.interaction_available.connect(
+		_on_arena_exit_interaction_available
+	)
+	arena_exit.interaction_unavailable.connect(
+		_on_arena_exit_interaction_unavailable
+	)
+	arena_exit.prompt_changed.connect(_on_arena_exit_prompt_changed)
+	arena_exit.tree_exiting.connect(
+		_on_arena_exit_tree_exiting.bind(arena_exit)
+	)
+	if arena_exit.has_nearby_player():
+		_on_arena_exit_interaction_available(arena_exit)
+
+
 func _disconnect_player_components() -> void:
 	if health_component != null and is_instance_valid(health_component):
 		if health_component.health_changed.is_connected(
@@ -371,6 +444,58 @@ func _on_instability_level_changed(level: int) -> void:
 			_start_instability_pulse(0.45, 0.25)
 		_:
 			instability_section.modulate = Color.WHITE
+
+
+func _on_objective_progress_changed(
+	defeated_spawn_count: int,
+	required_spawn_count: int,
+	memory_collected: bool,
+	altar_activated: bool
+) -> void:
+	var displayed_required_count: int = maxi(
+		required_spawn_count,
+		REQUIRED_ENEMY_SPAWN_COUNT
+	)
+	objective_enemies.text = "Enemies: %d / %d" % [
+		mini(defeated_spawn_count, displayed_required_count),
+		displayed_required_count,
+	]
+	objective_memory.text = (
+		"Memory: Remembered" if memory_collected else "Memory: Missing"
+	)
+	objective_altar.text = (
+		"Altar: Active" if altar_activated else "Altar: Inactive"
+	)
+
+
+func _on_arena_exit_unlocked() -> void:
+	objective_title.text = "OBJECTIVE COMPLETE"
+	objective_enemies.hide()
+	objective_memory.hide()
+	objective_altar.hide()
+	objective_summary.text = "The arena exit is open"
+	objective_summary.show()
+	_refresh_interaction_prompt()
+
+
+func _on_arena_completed() -> void:
+	_hide_interaction_prompt()
+	death_overlay.hide()
+	completion_overlay.show()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if (
+		not completion_overlay.visible
+		or _restart_requested
+		or not event.is_action_pressed(&"restart_run")
+		or event.is_echo()
+	):
+		return
+	_restart_requested = true
+	get_viewport().set_input_as_handled()
+	GameState.reset_run_state()
+	get_tree().reload_current_scene()
 
 
 func _start_instability_pulse(
@@ -535,7 +660,41 @@ func _on_memory_tree_exiting(memory: MemoryFragment) -> void:
 	_refresh_interaction_prompt()
 
 
+func _on_arena_exit_interaction_available(
+	arena_exit: ArenaExit
+) -> void:
+	if arena_exit == null or not is_instance_valid(arena_exit):
+		return
+	if not _available_arena_exits.has(arena_exit):
+		_available_arena_exits.append(arena_exit)
+	_refresh_interaction_prompt()
+
+
+func _on_arena_exit_interaction_unavailable(
+	arena_exit: ArenaExit
+) -> void:
+	_available_arena_exits.erase(arena_exit)
+	if _active_prompt_arena_exit == arena_exit:
+		_active_prompt_arena_exit = null
+	_refresh_interaction_prompt()
+
+
+func _on_arena_exit_prompt_changed(_arena_exit: ArenaExit) -> void:
+	_refresh_interaction_prompt()
+
+
+func _on_arena_exit_tree_exiting(arena_exit: ArenaExit) -> void:
+	_observed_arena_exits.erase(arena_exit)
+	_available_arena_exits.erase(arena_exit)
+	if _active_prompt_arena_exit == arena_exit:
+		_active_prompt_arena_exit = null
+	_refresh_interaction_prompt()
+
+
 func _refresh_interaction_prompt() -> void:
+	if completion_overlay.visible:
+		_hide_interaction_prompt()
+		return
 	if _absorbing_core != null and is_instance_valid(_absorbing_core):
 		interaction_prompt.text = "Absorbing..."
 		interaction_prompt.show()
@@ -544,6 +703,7 @@ func _refresh_interaction_prompt() -> void:
 	_remove_invalid_available_cores()
 	_remove_invalid_available_altars()
 	_remove_invalid_available_memories()
+	_remove_invalid_available_arena_exits()
 	if not _available_cores.is_empty():
 		_active_prompt_core = _available_cores.back()
 		_active_prompt_altar = null
@@ -568,6 +728,15 @@ func _refresh_interaction_prompt() -> void:
 		return
 
 	_active_prompt_altar = null
+	if not _available_arena_exits.is_empty():
+		_active_prompt_arena_exit = _available_arena_exits.back()
+		interaction_prompt.text = (
+			_active_prompt_arena_exit.get_prompt_text()
+		)
+		interaction_prompt.show()
+		return
+
+	_active_prompt_arena_exit = null
 	_hide_interaction_prompt()
 
 
@@ -601,6 +770,21 @@ func _remove_invalid_available_memories() -> void:
 			_available_memories.remove_at(index)
 
 
+func _remove_invalid_available_arena_exits() -> void:
+	for index: int in range(
+		_available_arena_exits.size() - 1,
+		-1,
+		-1
+	):
+		var arena_exit: ArenaExit = _available_arena_exits[index]
+		if (
+			arena_exit == null
+			or not is_instance_valid(arena_exit)
+			or arena_exit.is_completed
+		):
+			_available_arena_exits.remove_at(index)
+
+
 func _hide_interaction_prompt() -> void:
 	interaction_prompt.text = "Press E to interact"
 	interaction_prompt.hide()
@@ -621,10 +805,24 @@ func _exit_tree() -> void:
 	if (
 		GameState != null
 		and is_instance_valid(GameState)
-		and GameState.death_count_changed.is_connected(
-			_on_death_count_changed
-		)
 	):
-		GameState.death_count_changed.disconnect(
+		if GameState.death_count_changed.is_connected(
 			_on_death_count_changed
-		)
+		):
+			GameState.death_count_changed.disconnect(
+				_on_death_count_changed
+			)
+		if GameState.objective_progress_changed.is_connected(
+			_on_objective_progress_changed
+		):
+			GameState.objective_progress_changed.disconnect(
+				_on_objective_progress_changed
+			)
+		if GameState.arena_exit_unlocked.is_connected(
+			_on_arena_exit_unlocked
+		):
+			GameState.arena_exit_unlocked.disconnect(
+				_on_arena_exit_unlocked
+			)
+		if GameState.arena_completed.is_connected(_on_arena_completed):
+			GameState.arena_completed.disconnect(_on_arena_completed)

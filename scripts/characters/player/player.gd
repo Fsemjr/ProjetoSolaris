@@ -3,6 +3,7 @@ extends "res://scripts/characters/player/player_movement.gd"
 enum PlayerState {
 	ACTIVE,
 	DEAD,
+	COMPLETED,
 }
 
 signal player_respawned(respawn_position: Vector2)
@@ -13,6 +14,9 @@ signal player_died
 
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var hurtbox_component: HurtboxComponent = $Hurtbox
+@onready var hurtbox_collision: CollisionShape2D = (
+	$Hurtbox/CollisionShape2D
+)
 @onready var corruption_component: CorruptionComponent = $CorruptionComponent
 @onready var player_corruption: PlayerCorruption = $PlayerCorruption
 @onready var combat_controller: Node2D = $Visuals/ScythePivot
@@ -49,6 +53,10 @@ func _ready() -> void:
 	health_component.died.connect(_on_died)
 	dodge_started.connect(_on_dodge_started)
 	dodge_ended.connect(_on_dodge_ended)
+	if not GameState.arena_completed.is_connected(_on_arena_completed):
+		GameState.arena_completed.connect(_on_arena_completed)
+	if GameState.arena_is_completed:
+		_on_arena_completed()
 
 
 func set_fallback_respawn_position(position: Vector2) -> void:
@@ -63,7 +71,7 @@ func set_fallback_respawn_position(position: Vector2) -> void:
 func _can_start_dodge() -> bool:
 	return (
 		super._can_start_dodge()
-		and player_state != PlayerState.DEAD
+		and player_state == PlayerState.ACTIVE
 		and not health_component.is_dead
 		and not player_corruption.is_absorbing()
 		and not bool(combat_controller.get(&"is_attacking"))
@@ -78,12 +86,13 @@ func _on_dodge_ended() -> void:
 	if (
 		not health_component.is_dead
 		and not player_corruption.is_absorbing()
+		and player_state == PlayerState.ACTIVE
 	):
 		combat_controller.set_process(true)
 
 
 func _on_damage_received_visual(_amount: float, _source: Node) -> void:
-	if player_state == PlayerState.DEAD:
+	if player_state != PlayerState.ACTIVE:
 		return
 
 	_stop_damage_flash()
@@ -110,7 +119,7 @@ func _clear_damage_flash_tween() -> void:
 
 
 func _on_died() -> void:
-	if player_state == PlayerState.DEAD:
+	if player_state != PlayerState.ACTIVE:
 		return
 
 	_stop_damage_flash()
@@ -168,5 +177,30 @@ func _choose_respawn_position() -> Vector2:
 	return _initial_spawn_position
 
 
+func _on_arena_completed() -> void:
+	if player_state != PlayerState.ACTIVE:
+		return
+
+	_stop_damage_flash()
+	player_state = PlayerState.COMPLETED
+	_respawn_pending = false
+	respawn_delay_timer.stop()
+	player_corruption.enter_completed_state()
+	combat_controller.call(&"enter_completed_state")
+	enter_completed_state()
+	collapse_damage_timer.stop()
+	hurtbox_component.incoming_damage_multiplier = 1.0
+	hurtbox_component.set_deferred(&"monitoring", false)
+	hurtbox_component.set_deferred(&"monitorable", false)
+	hurtbox_collision.set_deferred(&"disabled", true)
+	velocity = Vector2.ZERO
+
+
 func _exit_tree() -> void:
 	_stop_damage_flash()
+	if (
+		GameState != null
+		and is_instance_valid(GameState)
+		and GameState.arena_completed.is_connected(_on_arena_completed)
+	):
+		GameState.arena_completed.disconnect(_on_arena_completed)

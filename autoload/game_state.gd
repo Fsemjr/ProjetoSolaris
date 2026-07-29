@@ -6,12 +6,32 @@ signal respawn_point_changed(
 	altar_id: StringName
 )
 signal memory_collected(memory_id: StringName)
+signal objective_progress_changed(
+	defeated_spawn_count: int,
+	required_spawn_count: int,
+	memory_collected: bool,
+	altar_activated: bool
+)
+signal arena_exit_unlocked
+signal arena_completed
 
 var death_count: int = 0
 var current_respawn_position: Vector2 = Vector2.ZERO
 var active_altar_id: StringName = &""
 var has_respawn_point: bool = false
 var collected_memory_ids: Array[StringName] = []
+var defeated_enemy_spawn_ids: Array[StringName] = []
+var arena_exit_is_unlocked: bool = false
+var arena_is_completed: bool = false
+
+var _required_enemy_spawn_count: int = 0
+var _last_progress_spawn_count: int = -1
+var _last_progress_required_count: int = -1
+var _last_progress_memory_collected: bool = false
+var _last_progress_altar_activated: bool = false
+
+const REQUIRED_MEMORY_ID: StringName = &"prototype_memory_01"
+const REQUIRED_ALTAR_ID: StringName = &"prototype_altar_01"
 
 
 func register_death() -> void:
@@ -68,11 +88,108 @@ func clear_memories() -> void:
 	collected_memory_ids.clear()
 
 
+func register_defeated_enemy_spawn(spawn_id: StringName) -> bool:
+	if spawn_id == &"" or defeated_enemy_spawn_ids.has(spawn_id):
+		return false
+	defeated_enemy_spawn_ids.append(spawn_id)
+	return true
+
+
+func has_defeated_enemy_spawn(spawn_id: StringName) -> bool:
+	return spawn_id != &"" and defeated_enemy_spawn_ids.has(spawn_id)
+
+
+func get_defeated_enemy_spawn_count() -> int:
+	return defeated_enemy_spawn_ids.size()
+
+
+func evaluate_arena_objective(required_spawn_count: int) -> bool:
+	_required_enemy_spawn_count = maxi(required_spawn_count, 0)
+	var memory_is_collected: bool = has_memory(REQUIRED_MEMORY_ID)
+	var altar_is_activated: bool = (
+		has_respawn_point
+		and active_altar_id == REQUIRED_ALTAR_ID
+	)
+	_emit_objective_progress_if_changed(
+		memory_is_collected,
+		altar_is_activated
+	)
+
+	var objective_is_complete: bool = (
+		defeated_enemy_spawn_ids.size() >= _required_enemy_spawn_count
+		and _required_enemy_spawn_count > 0
+		and memory_is_collected
+		and altar_is_activated
+	)
+	if objective_is_complete and not arena_exit_is_unlocked:
+		arena_exit_is_unlocked = true
+		arena_exit_unlocked.emit()
+	return arena_exit_is_unlocked
+
+
+func complete_arena() -> bool:
+	if not arena_exit_is_unlocked or arena_is_completed:
+		return false
+	arena_is_completed = true
+	arena_completed.emit()
+	return true
+
+
+func clear_arena_progress() -> void:
+	var progress_changed: bool = (
+		not defeated_enemy_spawn_ids.is_empty()
+		or arena_exit_is_unlocked
+		or arena_is_completed
+	)
+	defeated_enemy_spawn_ids.clear()
+	arena_exit_is_unlocked = false
+	arena_is_completed = false
+	if progress_changed:
+		_reset_progress_snapshot()
+	_emit_objective_progress_if_changed(
+		has_memory(REQUIRED_MEMORY_ID),
+		has_respawn_point and active_altar_id == REQUIRED_ALTAR_ID
+	)
+
+
+func _emit_objective_progress_if_changed(
+	memory_is_collected: bool,
+	altar_is_activated: bool
+) -> void:
+	var defeated_spawn_count: int = defeated_enemy_spawn_ids.size()
+	if (
+		defeated_spawn_count == _last_progress_spawn_count
+		and _required_enemy_spawn_count == _last_progress_required_count
+		and memory_is_collected == _last_progress_memory_collected
+		and altar_is_activated == _last_progress_altar_activated
+	):
+		return
+
+	_last_progress_spawn_count = defeated_spawn_count
+	_last_progress_required_count = _required_enemy_spawn_count
+	_last_progress_memory_collected = memory_is_collected
+	_last_progress_altar_activated = altar_is_activated
+	objective_progress_changed.emit(
+		defeated_spawn_count,
+		_required_enemy_spawn_count,
+		memory_is_collected,
+		altar_is_activated
+	)
+
+
+func _reset_progress_snapshot() -> void:
+	_last_progress_spawn_count = -1
+	_last_progress_required_count = -1
+	_last_progress_memory_collected = false
+	_last_progress_altar_activated = false
+
+
 func reset_run_state() -> void:
-	# This represents a new complete run, so run-scoped memories are cleared.
+	# A complete new run clears run-scoped memories and arena progress.
 	if death_count != 0:
 		death_count = 0
 		death_count_changed.emit(death_count)
 
 	clear_respawn_point()
 	clear_memories()
+	clear_arena_progress()

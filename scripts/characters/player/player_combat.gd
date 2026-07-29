@@ -18,6 +18,7 @@ extends Node2D
 var is_attacking: bool = false
 var is_on_cooldown: bool = false
 var is_dead: bool = false
+var is_completed: bool = false
 var current_attack_damage: float = 0.0
 
 
@@ -30,7 +31,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	if is_dead:
+	if is_dead or is_completed:
 		return
 
 	if not is_attacking:
@@ -47,7 +48,7 @@ func _update_aim(mouse_position: Vector2) -> void:
 
 
 func _try_attack() -> void:
-	if is_dead or is_attacking or is_on_cooldown:
+	if is_dead or is_completed or is_attacking or is_on_cooldown:
 		return
 
 	is_attacking = true
@@ -61,7 +62,7 @@ func _try_attack() -> void:
 
 
 func _set_hitbox_active(is_active: bool) -> void:
-	var should_activate: bool = is_active and not is_dead
+	var should_activate: bool = is_active and not is_dead and not is_completed
 	if should_activate:
 		attack_hitbox.begin_attack(current_attack_damage, attack_owner_node)
 	else:
@@ -88,7 +89,7 @@ func _finish_attack() -> void:
 
 
 func _set_scythe_trail_visible(should_show: bool) -> void:
-	scythe_trail.visible = should_show and not is_dead
+	scythe_trail.visible = should_show and not is_dead and not is_completed
 
 
 func enter_dead_state() -> void:
@@ -117,13 +118,25 @@ func exit_dead_state() -> void:
 	set_process(true)
 
 
+func enter_completed_state() -> void:
+	if is_completed:
+		return
+	is_completed = true
+	set_process(false)
+	attack_cooldown_timer.stop()
+	is_on_cooldown = false
+	animation_player.stop()
+	_finish_attack()
+	_set_scythe_trail_visible(false)
+
+
 func _on_animation_finished(animation_name: StringName) -> void:
 	if animation_name == &"attack":
 		_finish_attack()
 
 
 func _on_attack_cooldown_timeout() -> void:
-	if is_dead:
+	if is_dead or is_completed:
 		return
 	is_on_cooldown = false
 
