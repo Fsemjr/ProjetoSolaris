@@ -1,589 +1,357 @@
-# Visão Geral
-
-Projeto Solaris será um jogo 2D de ação dark fantasy desenvolvido em Godot 4.
-
-## Estrutura
-
-O jogo será dividido em fases fechadas, não utilizando mundo aberto.
-
-Cada fase representará uma região contaminada pela luz corrompida e terá:
-
-- área limitada;
-- grupos ou ondas de inimigos;
-- objetivos específicos;
-- eventos narrativos;
-- um inimigo especial ou chefe;
-- ponto de entrada e saída.
-
-## Câmera
-
-O jogo utilizará visão superior.
-
-A câmera:
-
-- acompanhará o jogador;
-- não terá rotação;
-- manterá zoom constante;
-- utilizará suavização de movimento;
-- respeitará os limites de cada fase.
-
-## Referência
-
-Zombie Survivors será usado apenas como referência para:
-
-- perspectiva;
-- legibilidade do combate;
-- quantidade de inimigos;
-- progressão durante a partida;
-- organização visual da interface.
-
-O projeto não deverá copiar personagens, arte, mapas, código ou identidade visual.
-
-# Projeto Solaris — Game Design Document
+# Solares — Game Design Document
 
 ## 1. Visão geral
 
-Projeto Solaris é um jogo 2D de ação dark fantasy para PC, desenvolvido na Godot Engine 4.
+Solares é um jogo de ação 2D top-down e dark fantasy desenvolvido na Godot.
+O jogador controla o Camponês Sem Nome, um mortal que preserva suas memórias
+depois de morrer e consegue transformar Luz Corrompida em poder temporário.
 
-O jogador controla o Camponês Sem Nome, um mortal preso em um mundo no qual a morte deixou de ser definitiva.
+O jogo completo é planejado como uma sequência de fases fechadas, não como
+mundo aberto. O repositório atual contém somente uma arena técnica destinada
+a sessões de aproximadamente cinco a dez minutos.
 
-Diferentemente dos demais Retornados, o protagonista mantém suas memórias depois de morrer. Ele também consegue absorver a Luz Corrompida presente nas criaturas do mundo, transformando-a temporariamente em poder.
+## 2. Identidade e referências
 
-O jogo será dividido em fases. Não será um mundo aberto.
+O combate deve valorizar:
 
----
+- controle manual;
+- posicionamento;
+- direção do ataque;
+- leitura dos inimigos;
+- esquiva;
+- escolha do momento de absorver;
+- risco e recompensa da Instabilidade.
 
-## 2. Conceito principal
+Jogos de sobrevivência em arena podem servir como referência de perspectiva,
+legibilidade e ritmo. O projeto não deve copiar personagens, arte, mapas,
+código ou identidade visual de outros jogos.
 
-O ciclo principal do jogo será:
+## 3. Premissa
 
-```text
-Entrar em uma fase
-↓
-Explorar a região
-↓
-Enfrentar inimigos
-↓
-Absorver Luz Corrompida
-↓
-Escolher melhorias temporárias
-↓
-Encontrar memórias e eventos
-↓
-Enfrentar o chefe ou cumprir o objetivo
-↓
-Concluir a fase ou morrer
-↓
-Retornar ao refúgio ou ponto de renascimento
-```
+O Camponês Sem Nome vive em um mundo no qual a morte deixou de ser definitiva.
+Diferentemente dos Retornados, ele mantém sua identidade e suas memórias ao
+renascer. Inimigos carregam núcleos de Luz Corrompida que podem fortalecê-lo,
+mas cada absorção aumenta a Instabilidade.
 
-O jogador deve sentir que cada morte faz parte da história e não é apenas uma tela de derrota.
+A morte faz parte do ciclo narrativo e mecânico:
 
----
+- poder temporário é perdido;
+- inimigos retornam;
+- o altar permanece ativo;
+- memórias e mortes permanecem registradas durante a execução.
 
-## 3. Plataforma
+## 4. Estado atual do protótipo
 
-Plataforma inicial:
+O protótipo implementa uma arena fechada de 1600 × 900 pixels com:
 
-* Windows PC.
+- um jogador equipado com foice;
+- quatro instâncias do inimigo BasicReturned;
+- um altar de renascimento;
+- uma memória;
+- HUD;
+- limites físicos;
+- ciclo completo de combate, absorção, morte e respawn.
 
-Controles principais:
+A meta de duração da arena é de cinco a dez minutos. O balanceamento atual é
+uma primeira passagem e ainda pode mudar após novos playtests.
 
-* teclado;
-* mouse.
+## 5. Controles implementados
 
-Suporte para controle poderá ser avaliado futuramente, mas não faz parte do primeiro protótipo.
+| Entrada | Ação |
+| --- | --- |
+| W, A, S, D | Movimento |
+| Mouse | Direção da foice |
+| Botão esquerdo | Ataque básico |
+| Espaço | Esquiva |
+| E | Interação, absorção, altar ou memória |
 
----
+Esc está mapeado como `pause`, mas a pausa ainda não foi implementada.
 
-## 4. Gênero
-
-O jogo combina elementos de:
-
-* ação 2D;
-* dark fantasy;
-* sobrevivência;
-* progressão durante a fase;
-* progressão permanente limitada;
-* exploração;
-* combate contra grupos de inimigos;
-* elementos roguelite.
-
-O jogo não será uma cópia de nenhum título específico.
-
----
-
-## 5. Referências
-
-Zombie Survivors será usado como referência para:
-
-* perspectiva superior;
-* legibilidade do combate;
-* presença de múltiplos inimigos;
-* evolução durante uma partida;
-* interface de vida e recursos;
-* estrutura de sobrevivência em arenas.
-
-O projeto deverá desenvolver identidade própria por meio de:
-
-* combate manual;
-* narrativa da morte;
-* absorção da Luz Corrompida;
-* protagonista que mantém suas memórias;
-* ambientação dark fantasy;
-* fases com exploração e objetivos;
-* consequências narrativas das mortes.
-
-Não copiar personagens, nomes, arte, código, mapas, interface ou identidade visual de outros jogos.
-
----
-
-## 6. Estrutura das fases
-
-O jogo completo deverá possuir fases maiores, com duração média planejada de aproximadamente 20 a 30 minutos.
-
-Essa duração poderá variar conforme:
-
-* habilidade do jogador;
-* exploração;
-* dificuldade;
-* eventos;
-* quantidade de combates;
-* chefe da região.
-
-As fases serão áreas fechadas, com limites definidos.
-
-Cada fase poderá conter:
-
-* ponto inicial;
-* caminhos principais;
-* caminhos opcionais;
-* arenas de combate;
-* inimigos comuns;
-* inimigos especiais;
-* eventos narrativos;
-* lembranças;
-* altares ou pontos de renascimento;
-* objetivo principal;
-* chefe;
-* saída.
-
-O primeiro protótipo não deverá possuir uma fase de 30 minutos.
-
-O primeiro protótipo deverá testar aproximadamente cinco a dez minutos de gameplay.
-
----
-
-## 7. Câmera
-
-O jogo utilizará visão superior 2D.
+## 6. Câmera e arena
 
 A câmera:
 
-* acompanhará o jogador;
-* manterá o jogador centralizado;
-* não rotacionará;
-* utilizará zoom constante;
-* poderá utilizar suavização;
-* respeitará os limites da fase.
+- é filha do jogador;
+- acompanha o movimento com suavização;
+- mantém zoom constante;
+- ignora a rotação da foice;
+- respeita os limites da arena;
+- não mostra áreas externas ao mapa.
 
-A câmera deverá permitir que o jogador identifique ameaças próximas sem revelar toda a fase.
+A arena possui quatro paredes físicas, espaço para deslocamento e pontos
+separados para jogador, inimigos, altar e memória.
 
-Mudanças dinâmicas de câmera poderão ser avaliadas futuramente para chefes ou eventos, mas não fazem parte do primeiro protótipo.
+## 7. Jogador
 
----
+O jogador possui:
 
-## 8. Jogador
+- 100 de vida;
+- movimento em oito direções;
+- velocidade normal de 220 px/s;
+- foice direcionada pelo mouse;
+- esquiva curta;
+- HealthComponent;
+- HurtboxComponent;
+- CorruptionComponent;
+- estados de ação e morte coordenados por scripts separados.
 
-O jogador controla o Camponês Sem Nome.
-
-Características narrativas:
-
-* preserva suas memórias após morrer;
-* sente e recorda todas as mortes;
-* não é fisicamente imortal;
-* pode morrer por ferimentos;
-* renasce depois da morte;
-* absorve Luz Corrompida;
-* perde o poder temporário quando morre;
-* mantém sua identidade;
-* acumula o peso psicológico de suas experiências.
-
-Características iniciais de gameplay:
-
-* movimentação em oito direções;
-* ataque controlado pelo jogador;
-* direção do ataque baseada no mouse;
-* vida;
-* esquiva;
-* absorção;
-* morte;
-* renascimento;
-* melhorias temporárias.
-
----
-
-## 9. Controles iniciais
+### Esquiva
 
 ```text
-W: mover para cima
-A: mover para a esquerda
-S: mover para baixo
-D: mover para a direita
-
-Mouse: apontar ou determinar a direção do ataque
-Botão esquerdo: ataque básico
-Espaço: esquiva
-E: interagir ou absorver
-Esc: menu de pausa
+Velocidade: 520 px/s
+Duração: 0,20 segundo
+Cooldown: 1,00 segundo
+Invulnerabilidade: não implementada
 ```
 
-O botão direito será reservado para uma habilidade secundária futura.
+A esquiva segue a direção atual ou a última direção válida e respeita as
+colisões da arena.
 
-Os controles poderão ser alterados nas configurações em versões futuras.
+## 8. Combate com foice
 
----
-
-## 10. Combate
-
-O jogador terá controle manual sobre os ataques.
-
-O combate deverá valorizar:
-
-* movimentação;
-* posicionamento;
-* direção do ataque;
-* tempo de ataque;
-* esquiva;
-* leitura dos inimigos;
-* gerenciamento de Luz Corrompida;
-* decisão entre atacar, fugir e absorver.
-
-O jogador não deve permanecer parado enquanto ataques automáticos resolvem todo o combate.
-
----
-
-## 11. Ataque básico
-
-O ataque inicial do protótipo poderá ser corpo a corpo.
-
-Proposta inicial:
-
-* ataque frontal;
-* pequeno arco de alcance;
-* curto tempo de recuperação;
-* dano fixo inicial;
-* direção determinada pelo mouse;
-* possibilidade de atingir mais de um inimigo próximo.
-
-Os valores finais ainda serão definidos por testes.
-
-Valores provisórios:
+O ataque é manual, corpo a corpo e orientado pelo mouse.
 
 ```text
 Dano base: 20
-Alcance: 60 pixels
-Tempo entre ataques: 0,5 segundo
+Dano com 20 a 39 de Luz: 21
+Cooldown: 0,50 segundo
+Duração total: 0,15 segundo
+Janela ativa aproximada: 0,069 segundo
+Alcance frontal aproximado da hitbox: 89 pixels
 ```
 
-Esses números não são definitivos.
+O mesmo alvo recebe dano apenas uma vez por golpe. Ataques não se sobrepõem e
+a Hitbox permanece desligada fora da janela ativa.
 
----
+## 9. BasicReturned
 
-## 12. Esquiva
+O protótipo possui um tipo de inimigo e quatro instâncias na arena.
 
-O jogador possuirá uma esquiva curta.
+O BasicReturned:
 
-A esquiva deverá:
+- inicia parado;
+- detecta o jogador;
+- persegue;
+- ataca em curta distância;
+- recebe dano;
+- entra em DEAD;
+- deixa um núcleo;
+- é restaurado pela arena após a morte do jogador.
 
-* mover o jogador rapidamente;
-* seguir a direção de movimento;
-* possuir tempo de recarga;
-* impedir uso contínuo;
-* ajudar a escapar de grupos de inimigos.
-
-A existência de quadros de invulnerabilidade ainda deverá ser testada.
-
-Configuração provisória:
+Valores atuais:
 
 ```text
-Duração: 0,2 segundo
-Recarga: 1 segundo
+Vida: 60
+Velocidade: 170 px/s
+Detecção: 240 pixels
+Alcance de ataque: 52 pixels
+Dano: 10
+Cooldown: 1,00 segundo
+Janela ativa: 0,10 segundo
 ```
 
----
+Sem bônus, três golpes de foice derrotam um BasicReturned.
 
-## 13. Vida
+## 10. Luz Corrompida
 
-O protagonista terá:
+Cada inimigo derrotado deixa exatamente um CorruptedLightCore.
+
+O núcleo:
+
+- permanece no chão;
+- não é coletado automaticamente;
+- exige proximidade e a tecla E;
+- bloqueia movimento e ataque durante a absorção;
+- pode ser cancelado por distância, dano ou morte;
+- desaparece ao concluir.
+
+Valores atuais:
 
 ```text
-Vida máxima inicial: 100
-Vida inicial: 100
+Luz por núcleo: 10
+Duração da absorção: 0,75 segundo
+Luz máxima: 100
+Bônus: +5% de dano a cada 20 de Luz
 ```
 
-Quando a vida chegar a zero, o jogador morrerá.
+Progressão de dano:
 
-No primeiro protótipo, não haverá ferimentos permanentes.
+| Luz | Multiplicador | Dano da foice |
+| ---: | ---: | ---: |
+| 0–19 | 1,00 | 20 |
+| 20–39 | 1,05 | 21 |
+| 40–59 | 1,10 | 22 |
+| 60–79 | 1,15 | 23 |
+| 80–99 | 1,20 | 24 |
+| 100 | 1,25 | 25 |
 
----
+## 11. Instabilidade
 
-## 14. Luz Corrompida
+Cada núcleo concede 24 de Instabilidade.
 
-A Luz Corrompida é o principal recurso temporário do jogo.
+| Nível | Faixa | Efeito implementado |
+| --- | --- | --- |
+| 0 — Estável | 0–69 | Sem penalidade |
+| 1 — Sobrecarregado | 70–89 | Jogador recebe 25% mais dano |
+| 2 — Colapso | 90–100 | Mantém dano ampliado e perde 5 de vida por segundo |
 
-Criaturas retornadas carregam núcleos dessa energia.
+Um ataque inimigo de 10 causa 12,5 no nível 1 ou 2. O HUD pulsa em níveis
+elevados e mostra `COLLAPSE` no nível 2.
 
-Quando um inimigo é derrotado, o jogador poderá absorver sua Luz Corrompida.
-
-A absorção poderá:
-
-* aumentar dano temporariamente;
-* alimentar habilidades;
-* aumentar a instabilidade;
-* alterar efeitos visuais;
-* criar riscos para o jogador.
-
-A Luz Corrompida deverá ser perdida quando o jogador morrer.
-
-Valor provisório:
+Com os quatro núcleos da arena, a progressão possível é:
 
 ```text
-Luz Corrompida máxima: 100
+24 → 48 → 72 → 96
 ```
 
----
+## 12. Altar
 
-## 15. Instabilidade
+O altar é ativado manualmente com E. Ao ativar:
 
-Absorver poder não deve ser uma escolha automaticamente positiva.
+- registra seu ID;
+- registra a posição global do RespawnMarker;
+- mostra um brilho persistente;
+- torna-se o ponto atual de renascimento;
+- não precisa ser ativado novamente após a morte.
 
-Cada absorção também aumentará a Instabilidade.
+O protótipo possui um altar.
 
-A Instabilidade representa o esforço do fragmento de luz para converter a energia corrompida.
+## 13. Morte e renascimento
 
-Possíveis consequências:
+Quando a vida chega a zero:
 
-* perda gradual de vida;
-* distorção visual;
-* redução de defesa;
-* surgimento de ecos;
-* ataques mais fortes;
-* habilidades instáveis;
-* eventos narrativos;
-* risco de colapso.
+1. o jogador entra em DEAD;
+2. ações e hitboxes são bloqueadas;
+3. absorções e efeitos ativos são cancelados;
+4. o contador de mortes aumenta uma vez;
+5. a tela `YOU DIED` aparece;
+6. a arena remove núcleos e restaura inimigos;
+7. após o atraso, o jogador retorna ao altar ou ao PlayerSpawn;
+8. vida volta a 100;
+9. Luz e Instabilidade voltam a zero;
+10. controles são reativados.
 
-No primeiro protótipo, a Instabilidade poderá aplicar somente um efeito simples.
+O protótipo não recarrega a aplicação inteira para renascer.
 
-Proposta inicial:
+## 14. Memórias
+
+A MemoryFragment registra um `StringName` único no GameState.
+
+Uma memória coletada:
+
+- não pode ser registrada duas vezes;
+- desaparece da arena;
+- permanece registrada após mortes;
+- não persiste depois que a aplicação é fechada.
+
+O protótipo possui uma memória e ainda não possui diário ou narrativa
+completa.
+
+## 15. HUD e feedback
+
+O HUD observa sinais e apresenta:
+
+- vida;
+- Luz Corrompida;
+- Instabilidade;
+- contador de mortes;
+- prompts de interação;
+- indicação de Colapso;
+- tela simples de morte.
+
+Feedbacks provisórios incluem flashes de dano, brilho do altar, pulsação de
+núcleos e Instabilidade, efeito de absorção e rastro da foice.
+
+## 16. Ciclo principal implementado
 
 ```text
-De 0 a 69:
-Sem penalidade grave.
-
-De 70 a 89:
-O jogador recebe mais dano.
-
-De 90 a 100:
-O jogador perde vida lentamente.
+Explorar a arena
+↓
+Combater BasicReturned
+↓
+Gerar e absorver núcleos
+↓
+Ganhar Luz e Instabilidade
+↓
+Ativar altar e coletar memória
+↓
+Receber dano e morrer
+↓
+Perder poder temporário
+↓
+Limpar núcleos e restaurar inimigos
+↓
+Renascer no altar
+↓
+Preservar mortes, altar e memórias durante a execução
 ```
 
-Os valores deverão ser balanceados em testes.
+Esse ciclo foi validado manualmente por sete mortes consecutivas e também por
+regressões técnicas.
 
----
+## 17. Implementado no protótipo
 
-## 16. Absorção
+- Arena fechada única.
+- Movimento, câmera, ataque e esquiva.
+- Vida, dano, hitboxes e hurtboxes.
+- BasicReturned com estados IDLE, CHASE, ATTACK e DEAD.
+- Núcleos e absorção manual.
+- Luz Corrompida, bônus de dano e Instabilidade.
+- HUD e feedbacks provisórios.
+- Altar, morte e respawn.
+- Restauração de quatro inimigos sem duplicação.
+- Limpeza de núcleos.
+- Memória persistente durante a execução.
+- Contador de mortes.
+- Primeira passagem de balanceamento.
 
-A absorção deverá exigir uma ação do jogador.
+## 18. Planejado / não implementado
 
-O jogador não deverá coletar automaticamente toda Luz Corrompida sem risco.
+- Arte e animações finais.
+- Áudio e música.
+- Salvamento em disco.
+- Menu completo e pausa funcional.
+- Múltiplas fases prontas.
+- Fases finais de 20 a 30 minutos.
+- Chefe.
+- Outros tipos de inimigo.
+- Habilidades secundárias e múltiplas armas.
+- Inventário, equipamentos e crafting.
+- Melhorias temporárias escolhidas pelo jogador.
+- Progressão permanente.
+- Refúgio.
+- Diário de memórias.
+- Narrativa, diálogos e eventos completos.
+- Suporte a controle, consoles, multiplayer ou mundo aberto.
 
-Proposta inicial:
+## 19. Visão futura
 
-1. o inimigo é derrotado;
-2. deixa um núcleo ou estado absorvível;
-3. o jogador se aproxima;
-4. pressiona `E`;
-5. permanece vulnerável durante um curto período;
-6. recebe Luz Corrompida;
-7. aumenta sua Instabilidade.
+O jogo completo poderá ter regiões contaminadas, objetivos, exploração,
+eventos narrativos, chefes e progressão entre fases. Essas ideias representam
+a direção criativa e não funcionalidades existentes no protótipo atual.
 
-Isso transforma a absorção em uma decisão de risco.
+Questões futuras incluem:
 
----
+- aparência final do Camponês Sem Nome;
+- identidade visual;
+- estrutura do refúgio;
+- sistema de melhorias;
+- tipos de inimigos e chefes;
+- quantidade e objetivos das fases;
+- sete fragmentos e sua função narrativa;
+- progressão permanente;
+- história da primeira região.
 
-## 17. Morte e renascimento
+## 20. Critérios atuais de sucesso
 
-Quando o jogador morrer:
+O protótipo é considerado tecnicamente funcional porque:
 
-* perderá a Luz Corrompida acumulada;
-* perderá melhorias temporárias da fase;
-* retornará ao último ponto de renascimento;
-* manterá memórias descobertas;
-* manterá informações narrativas;
-* aumentará seu contador de mortes;
-* poderá encontrar mudanças em diálogos ou eventos.
+- o ciclo principal pode ser concluído repetidamente;
+- combate e absorção exigem ação manual;
+- Luz oferece benefício;
+- Instabilidade produz risco;
+- morte restaura a arena sem duplicações;
+- altares, mortes e memórias são preservados durante a execução;
+- o projeto abre no Godot 4.5.1 sem erros de parser ou runtime.
 
-O jogador não deverá perder todo o progresso narrativo.
-
-A morte deverá ser integrada ao universo do jogo.
-
----
-
-## 18. Memórias
-
-As memórias são uma forma de progressão narrativa permanente.
-
-O jogador poderá encontrar:
-
-* lembranças de vidas anteriores;
-* registros da guerra entre Sol e Lua;
-* memórias de criaturas;
-* ecos de inimigos derrotados;
-* informações sobre os Paladinos;
-* pistas sobre os sete fragmentos;
-* fragmentos da identidade do protagonista.
-
-Depois de descobertas, essas memórias permanecerão registradas mesmo após a morte.
-
----
-
-## 19. Progressão temporária
-
-Durante cada fase, o jogador poderá receber melhorias temporárias.
-
-Exemplos:
-
-* aumento de dano;
-* aumento de alcance;
-* recuperação de vida;
-* redução da recarga da esquiva;
-* ataque adicional;
-* efeito de Luz Corrompida;
-* maior resistência;
-* absorção mais rápida.
-
-Essas melhorias serão perdidas após a morte ou conclusão da fase, conforme o sistema final de progressão.
-
-O primeiro protótipo poderá utilizar somente três melhorias.
-
----
-
-## 20. Progressão permanente
-
-A progressão permanente deverá ser limitada.
-
-O objetivo não é tornar o jogador tão forte que a morte deixe de importar.
-
-Possíveis progressões permanentes:
-
-* novas informações;
-* novas regiões;
-* novas armas;
-* novas opções de melhoria;
-* lembranças;
-* atalhos;
-* alterações no refúgio;
-* habilidades narrativamente justificadas.
-
-Atributos permanentes ainda não estão definidos.
-
----
-
-## 21. Inimigos
-
-O primeiro protótipo terá apenas um inimigo básico.
-
-Características iniciais:
-
-* identifica o jogador a uma distância limitada;
-* move-se em direção ao jogador;
-* ataca quando estiver próximo;
-* recebe dano;
-* morre;
-* deixa Luz Corrompida;
-* pode renascer quando a fase for reiniciada.
-
-Futuramente poderão existir:
-
-* inimigos rápidos;
-* inimigos resistentes;
-* inimigos de longa distância;
-* inimigos de suporte;
-* criaturas deformadas;
-* antigos membros das Guildas;
-* chefes ligados aos fragmentos.
-
----
-
-## 22. Primeiro protótipo
-
-O primeiro protótipo deverá conter:
-
-* uma arena;
-* um jogador;
-* câmera;
-* movimentação;
-* direção pelo mouse;
-* ataque básico;
-* esquiva;
-* vida;
-* um tipo de inimigo;
-* dano;
-* morte;
-* renascimento;
-* Luz Corrompida;
-* Instabilidade;
-* interface básica;
-* contador de mortes.
-
-Duração esperada:
-
-```text
-Cinco a dez minutos.
-```
-
-A arte poderá utilizar formas simples e recursos temporários.
-
-O objetivo é testar a jogabilidade, não a qualidade visual.
-
----
-
-## 23. Critérios de sucesso do protótipo
-
-O protótipo será considerado funcional quando:
-
-* o jogador puder se movimentar sem erros;
-* a câmera acompanhar corretamente;
-* o ataque seguir a direção do mouse;
-* inimigos perseguirem o jogador;
-* ataques causarem dano;
-* inimigos puderem morrer;
-* o jogador puder absorver Luz Corrompida;
-* a Luz aumentar temporariamente seu poder;
-* a Instabilidade gerar uma penalidade;
-* o jogador puder morrer;
-* o jogador puder renascer;
-* recursos temporários forem perdidos após a morte;
-* o projeto executar sem erros de parser.
-
----
-
-## 24. Questões ainda não definidas
-
-As seguintes decisões ainda precisam ser tomadas:
-
-* arma inicial do protagonista;
-* aparência do Camponês;
-* estilo artístico;
-* sistema exato de melhorias;
-* comportamento completo da Instabilidade;
-* estrutura do refúgio;
-* tipos de chefes;
-* quantidade total de fases;
-* funcionamento dos sete fragmentos;
-* progressão permanente;
-* história da primeira região;
-* condições para concluir cada fase.
-
-Essas decisões deverão ser feitas antes da implementação dos respectivos sistemas.
+Isso não significa que o jogo esteja finalizado.

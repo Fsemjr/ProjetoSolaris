@@ -1549,7 +1549,7 @@ Melhorar a leitura visual sem utilizar arte final.
 
 ## TASK-036 — Balancear protótipo
 
-**Status:** `[ ]`
+**Status:** `[x]`
 
 ### Objetivo
 
@@ -1642,7 +1642,7 @@ Preservar contador e altar
 
 ## TASK-038 — Limpar código provisório
 
-**Status:** `[ ]`
+**Status:** `[x]`
 
 ### Objetivo
 
@@ -1671,7 +1671,7 @@ Remover código de teste antes de considerar o protótipo concluído.
 
 ## TASK-039 — Atualizar documentação
 
-**Status:** `[ ]`
+**Status:** `[x]`
 
 ### Objetivo
 
@@ -1700,6 +1700,16 @@ TASKS.md
 * documentação corresponde ao projeto;
 * controles estão corretos;
 * instruções de execução funcionam.
+
+---
+
+## Estado do protótipo
+
+- ciclo principal implementado;
+- regressão concluída;
+- código provisório limpo;
+- documentação atualizada;
+- protótipo pronto para a próxima fase de desenvolvimento.
 
 ---
 
