@@ -1702,6 +1702,41 @@ TASKS.md
 * instruções de execução funcionam.
 
 ---
+## TASK-040 — Criar objetivo e conclusão da arena
+
+**Status:** `[ ]`
+
+### Objetivo
+
+Dar à arena uma condição clara de conclusão e permitir que o jogador finalize o protótipo.
+
+### Fluxo
+
+* entrar na arena;
+* derrotar os inimigos necessários;
+* cumprir o objetivo;
+* liberar a saída;
+* interagir com a saída;
+* mostrar uma tela simples de conclusão.
+
+### Regras
+
+* não criar uma nova fase;
+* não criar chefe;
+* não adicionar arte final;
+* não alterar balanceamento;
+* preservar morte, respawn, altar e memórias;
+* progresso da conclusão deve ser definido explicitamente.
+
+### Critérios de conclusão
+
+* saída começa bloqueada;
+* objetivo é compreensível;
+* condição de liberação funciona;
+* saída fornece feedback visual;
+* jogador consegue concluir a arena;
+* morte não quebra o fluxo;
+* nenhum erro é gerado.
 
 ## Estado do protótipo
 
