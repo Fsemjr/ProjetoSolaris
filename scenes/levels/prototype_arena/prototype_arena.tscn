@@ -1,0 +1,100 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/characters/player/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/basic_returned/basic_returned.tscn" id="2_enemy"]
+[ext_resource type="Script" path="res://scripts/world/prototype_arena.gd" id="3_arena"]
+[ext_resource type="PackedScene" path="res://scenes/ui/player_hud.tscn" id="4_hud"]
+[ext_resource type="PackedScene" path="res://scenes/objects/respawn_altar/respawn_altar.tscn" id="5_altar"]
+[ext_resource type="PackedScene" path="res://scenes/objects/memory_fragment/memory_fragment.tscn" id="6_memory"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_horizontal"]
+size = Vector2(1600, 40)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vertical"]
+size = Vector2(40, 900)
+
+[node name="PrototypeArena" type="Node2D"]
+script = ExtResource("3_arena")
+
+[node name="Environment" type="Node2D" parent="."]
+
+[node name="Floor" type="Polygon2D" parent="Environment"]
+z_index = -1
+color = Color(0.075, 0.09, 0.11, 1)
+polygon = PackedVector2Array(0, 0, 1600, 0, 1600, 900, 0, 900)
+
+[node name="Walls" type="Node2D" parent="Environment"]
+
+[node name="TopWall" type="StaticBody2D" parent="Environment/Walls"]
+position = Vector2(800, 20)
+
+[node name="Visual" type="Polygon2D" parent="Environment/Walls/TopWall"]
+color = Color(0.24, 0.16, 0.18, 1)
+polygon = PackedVector2Array(-800, -20, 800, -20, 800, 20, -800, 20)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/TopWall"]
+shape = SubResource("RectangleShape2D_horizontal")
+
+[node name="BottomWall" type="StaticBody2D" parent="Environment/Walls"]
+position = Vector2(800, 880)
+
+[node name="Visual" type="Polygon2D" parent="Environment/Walls/BottomWall"]
+color = Color(0.24, 0.16, 0.18, 1)
+polygon = PackedVector2Array(-800, -20, 800, -20, 800, 20, -800, 20)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/BottomWall"]
+shape = SubResource("RectangleShape2D_horizontal")
+
+[node name="LeftWall" type="StaticBody2D" parent="Environment/Walls"]
+position = Vector2(20, 450)
+
+[node name="Visual" type="Polygon2D" parent="Environment/Walls/LeftWall"]
+color = Color(0.24, 0.16, 0.18, 1)
+polygon = PackedVector2Array(-20, -450, 20, -450, 20, 450, -20, 450)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/LeftWall"]
+shape = SubResource("RectangleShape2D_vertical")
+
+[node name="RightWall" type="StaticBody2D" parent="Environment/Walls"]
+position = Vector2(1580, 450)
+
+[node name="Visual" type="Polygon2D" parent="Environment/Walls/RightWall"]
+color = Color(0.24, 0.16, 0.18, 1)
+polygon = PackedVector2Array(-20, -450, 20, -450, 20, 450, -20, 450)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Walls/RightWall"]
+shape = SubResource("RectangleShape2D_vertical")
+
+[node name="Objects" type="Node2D" parent="."]
+
+[node name="RespawnAltar" parent="Objects" instance=ExtResource("5_altar")]
+position = Vector2(400, 250)
+
+[node name="MemoryFragment" parent="Objects" instance=ExtResource("6_memory")]
+position = Vector2(650, 260)
+
+[node name="Entities" type="Node2D" parent="."]
+
+[node name="Player" parent="Entities" instance=ExtResource("1_player")]
+position = Vector2(800, 450)
+
+[node name="BasicReturned" parent="Entities" instance=ExtResource("2_enemy")]
+position = Vector2(1100, 450)
+
+[node name="BasicReturned2" parent="Entities" instance=ExtResource("2_enemy")]
+position = Vector2(1040, 220)
+
+[node name="BasicReturned3" parent="Entities" instance=ExtResource("2_enemy")]
+position = Vector2(1040, 680)
+
+[node name="BasicReturned4" parent="Entities" instance=ExtResource("2_enemy")]
+position = Vector2(520, 680)
+
+[node name="Pickups" type="Node2D" parent="."]
+
+[node name="PlayerSpawn" type="Marker2D" parent="."]
+position = Vector2(800, 450)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="PlayerHUD" parent="CanvasLayer" instance=ExtResource("4_hud")]

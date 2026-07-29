@@ -1,0 +1,53 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/objects/memory_fragment.gd" id="1_memory"]
+
+[sub_resource type="CircleShape2D" id="Circle_memory"]
+radius = 18.0
+
+[sub_resource type="CircleShape2D" id="Circle_interaction"]
+radius = 72.0
+
+[sub_resource type="Animation" id="Animation_pulse"]
+resource_name = "pulse"
+length = 1.2
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/path = NodePath("Visual:scale")
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.6, 1.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0.9, 0.9), Vector2(1.12, 1.12), Vector2(0.9, 0.9)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_memory"]
+_data = {
+&"pulse": SubResource("Animation_pulse")
+}
+
+[node name="MemoryFragment" type="Area2D" groups=["persistent_memories"]]
+collision_layer = 128
+collision_mask = 0
+monitoring = false
+script = ExtResource("1_memory")
+
+[node name="Visual" type="Polygon2D" parent="."]
+color = Color(0.35, 0.85, 1, 1)
+polygon = PackedVector2Array(0, -30, 20, 0, 0, 30, -20, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Circle_memory")
+
+[node name="InteractionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+shape = SubResource("Circle_interaction")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_memory")
+}
