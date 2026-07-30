@@ -1,0 +1,36 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/objects/progression_gate.gd" id="1_gate"]
+
+[sub_resource type="RectangleShape2D" id="Rectangle_gate"]
+size = Vector2(40, 240)
+
+[sub_resource type="RectangleShape2D" id="Rectangle_interaction"]
+size = Vector2(136, 336)
+
+[node name="ProgressionGate" type="StaticBody2D" groups=["progression_gates"]]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_gate")
+
+[node name="LockedVisual" type="Polygon2D" parent="."]
+z_index = 2
+color = Color(0.42, 0.12, 0.2, 0.94)
+polygon = PackedVector2Array(-20, -120, 20, -120, 20, 120, -20, 120)
+
+[node name="OpenVisual" type="Polygon2D" parent="."]
+visible = false
+z_index = 1
+color = Color(0.18, 0.72, 0.9, 0.14)
+polygon = PackedVector2Array(-20, -120, 20, -120, 20, 120, -20, 120)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Rectangle_gate")
+
+[node name="InteractionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionArea"]
+shape = SubResource("Rectangle_interaction")

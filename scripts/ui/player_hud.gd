@@ -68,6 +68,9 @@ var _active_prompt_memory: MemoryFragment = null
 var _observed_arena_exits: Array[ArenaExit] = []
 var _available_arena_exits: Array[ArenaExit] = []
 var _active_prompt_arena_exit: ArenaExit = null
+var _observed_gates: Array[ProgressionGate] = []
+var _available_gates: Array[ProgressionGate] = []
+var _active_prompt_gate: ProgressionGate = null
 var _restart_requested: bool = false
 
 const REQUIRED_ENEMY_SPAWN_COUNT: int = 4
@@ -377,6 +380,35 @@ func observe_arena_exit(arena_exit: ArenaExit) -> void:
 	)
 	if arena_exit.has_nearby_player():
 		_on_arena_exit_interaction_available(arena_exit)
+
+
+func observe_gate(gate: ProgressionGate) -> void:
+	if (
+		gate == null
+		or not is_instance_valid(gate)
+		or _observed_gates.has(gate)
+	):
+		return
+	_observed_gates.append(gate)
+	if not gate.interaction_available.is_connected(
+		_on_gate_interaction_available
+	):
+		gate.interaction_available.connect(
+			_on_gate_interaction_available
+		)
+	if not gate.interaction_unavailable.is_connected(
+		_on_gate_interaction_unavailable
+	):
+		gate.interaction_unavailable.connect(
+			_on_gate_interaction_unavailable
+		)
+	if not gate.gate_opened.is_connected(_on_gate_opened):
+		gate.gate_opened.connect(_on_gate_opened)
+	var exiting_callback: Callable = _on_gate_tree_exiting.bind(gate)
+	if not gate.tree_exiting.is_connected(exiting_callback):
+		gate.tree_exiting.connect(exiting_callback)
+	if gate.has_nearby_player():
+		_on_gate_interaction_available(gate)
 
 
 func _disconnect_player_components() -> void:
@@ -731,6 +763,37 @@ func _on_arena_exit_tree_exiting(arena_exit: ArenaExit) -> void:
 	_refresh_interaction_prompt()
 
 
+func _on_gate_interaction_available(gate: ProgressionGate) -> void:
+	if (
+		gate == null
+		or not is_instance_valid(gate)
+		or gate.is_open
+	):
+		return
+	if not _available_gates.has(gate):
+		_available_gates.append(gate)
+	_refresh_interaction_prompt()
+
+
+func _on_gate_interaction_unavailable(gate: ProgressionGate) -> void:
+	_available_gates.erase(gate)
+	if _active_prompt_gate == gate:
+		_active_prompt_gate = null
+	_refresh_interaction_prompt()
+
+
+func _on_gate_opened(_gate_id: StringName) -> void:
+	_show_encounter_message("PATH OPENED")
+
+
+func _on_gate_tree_exiting(gate: ProgressionGate) -> void:
+	_observed_gates.erase(gate)
+	_available_gates.erase(gate)
+	if _active_prompt_gate == gate:
+		_active_prompt_gate = null
+	_refresh_interaction_prompt()
+
+
 func _refresh_interaction_prompt() -> void:
 	if completion_overlay.visible:
 		_hide_interaction_prompt()
@@ -744,6 +807,7 @@ func _refresh_interaction_prompt() -> void:
 	_remove_invalid_available_altars()
 	_remove_invalid_available_memories()
 	_remove_invalid_available_arena_exits()
+	_remove_invalid_available_gates()
 	if not _available_cores.is_empty():
 		_active_prompt_core = _available_cores.back()
 		_active_prompt_altar = null
@@ -768,6 +832,14 @@ func _refresh_interaction_prompt() -> void:
 		return
 
 	_active_prompt_altar = null
+	if not _available_gates.is_empty():
+		_active_prompt_gate = _available_gates.back()
+		_active_prompt_arena_exit = null
+		interaction_prompt.text = _active_prompt_gate.get_prompt_text()
+		interaction_prompt.show()
+		return
+
+	_active_prompt_gate = null
 	if not _available_arena_exits.is_empty():
 		_active_prompt_arena_exit = _available_arena_exits.back()
 		interaction_prompt.text = (
@@ -823,6 +895,17 @@ func _remove_invalid_available_arena_exits() -> void:
 			or arena_exit.is_completed
 		):
 			_available_arena_exits.remove_at(index)
+
+
+func _remove_invalid_available_gates() -> void:
+	for index: int in range(_available_gates.size() - 1, -1, -1):
+		var gate: ProgressionGate = _available_gates[index]
+		if (
+			gate == null
+			or not is_instance_valid(gate)
+			or gate.is_open
+		):
+			_available_gates.remove_at(index)
 
 
 func _hide_interaction_prompt() -> void:

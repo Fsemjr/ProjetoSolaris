@@ -4,6 +4,7 @@ extends Node2D
 @onready var objects: Node2D = $Objects
 @onready var pickups: Node2D = $Pickups
 @onready var encounter_zones: Node2D = $EncounterZones
+@onready var progression_gates: Node2D = $ProgressionGates
 @onready var player: CharacterBody2D = $Entities/Player
 @onready var player_spawn: Marker2D = $PlayerSpawn
 @onready var player_hud: PlayerHUD = $CanvasLayer/PlayerHUD
@@ -41,6 +42,7 @@ func _ready() -> void:
 		if arena_exit != null:
 			player_hud.observe_arena_exit(arena_exit)
 
+	_configure_progression_gates()
 	_register_common_enemy_spawns()
 	_configure_encounters()
 	for entity: Node in entities.get_children():
@@ -256,6 +258,22 @@ func _configure_encounters() -> void:
 		)
 
 
+func _configure_progression_gates() -> void:
+	var registered_gate_ids: Array[StringName] = []
+	for child: Node in progression_gates.get_children():
+		var gate: ProgressionGate = child as ProgressionGate
+		if gate == null:
+			continue
+		if gate.gate_id == &"" or gate.required_encounter_id == &"":
+			push_error("ProgressionGate requires gate and encounter IDs.")
+			continue
+		if registered_gate_ids.has(gate.gate_id):
+			push_error("ProgressionGate IDs must be unique.")
+			continue
+		registered_gate_ids.append(gate.gate_id)
+		player_hud.observe_gate(gate)
+
+
 func _has_registered_spawn(spawn_id: StringName) -> bool:
 	for spawn: Dictionary in _common_enemy_spawns:
 		if spawn.get("id", &"") as StringName == spawn_id:
@@ -355,6 +373,12 @@ func _connect_objective_signals() -> void:
 		_on_respawn_point_changed
 	):
 		GameState.respawn_point_changed.connect(_on_respawn_point_changed)
+	if not GameState.encounter_completed.is_connected(
+		_on_encounter_completed_for_gates
+	):
+		GameState.encounter_completed.connect(
+			_on_encounter_completed_for_gates
+		)
 
 
 func _evaluate_arena_objective() -> void:
@@ -372,6 +396,18 @@ func _on_respawn_point_changed(
 	_evaluate_arena_objective()
 
 
+func _on_encounter_completed_for_gates(
+	encounter_id: StringName
+) -> void:
+	for child: Node in progression_gates.get_children():
+		var gate: ProgressionGate = child as ProgressionGate
+		if (
+			gate != null
+			and gate.required_encounter_id == encounter_id
+		):
+			gate.open_gate()
+
+
 func _exit_tree() -> void:
 	if GameState == null or not is_instance_valid(GameState):
 		return
@@ -382,4 +418,10 @@ func _exit_tree() -> void:
 	):
 		GameState.respawn_point_changed.disconnect(
 			_on_respawn_point_changed
+		)
+	if GameState.encounter_completed.is_connected(
+		_on_encounter_completed_for_gates
+	):
+		GameState.encounter_completed.disconnect(
+			_on_encounter_completed_for_gates
 		)

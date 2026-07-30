@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/characters/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/basic_returned/basic_returned.tscn" id="2_enemy"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" path="res://scenes/objects/memory_fragment/memory_fragment.tscn" id="6_memory"]
 [ext_resource type="PackedScene" path="res://scenes/objects/arena_exit/arena_exit.tscn" id="7_exit"]
 [ext_resource type="PackedScene" path="res://scenes/systems/encounter_zone/encounter_zone.tscn" id="8_encounter"]
+[ext_resource type="PackedScene" path="res://scenes/objects/progression_gate/progression_gate.tscn" id="9_gate"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_horizontal"]
 size = Vector2(2400, 40)
@@ -194,6 +195,20 @@ position = Vector2(400, 450)
 encounter_id = &"encounter_03"
 enemy_spawn_ids = Array[StringName]([&"enemy_spawn_04"])
 zone_size = Vector2(700, 60)
+
+[node name="ProgressionGates" type="Node2D" parent="."]
+
+[node name="Gate01" parent="ProgressionGates" instance=ExtResource("9_gate")]
+position = Vector2(900, 1165)
+gate_id = &"gate_01"
+required_encounter_id = &"encounter_01"
+gate_size = Vector2(36, 390)
+
+[node name="Gate02" parent="ProgressionGates" instance=ExtResource("9_gate")]
+position = Vector2(395, 450)
+gate_id = &"gate_02"
+required_encounter_id = &"encounter_02"
+gate_size = Vector2(710, 36)
 
 [node name="PlayerSpawn" type="Marker2D" parent="."]
 position = Vector2(220, 1180)

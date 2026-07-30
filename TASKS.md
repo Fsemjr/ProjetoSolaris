@@ -1838,7 +1838,7 @@ concluídas.
 
 ## TASK-043 — Criar bloqueios de progressão
 
-**Status:** `[ ]`
+**Status:** `[x]`
 
 ### Objetivo
 
@@ -1864,6 +1864,11 @@ Controlar o avanço entre áreas da fase através dos objetivos já existentes.
 * morte não fecha bloqueios já concluídos;
 * reset restaura estado inicial;
 * não existem erros.
+
+### Validação
+
+Implementação, validação técnica automatizada e validação manual do jogador
+concluídas.
 
 ---
 
