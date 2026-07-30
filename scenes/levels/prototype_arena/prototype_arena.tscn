@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/characters/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/basic_returned/basic_returned.tscn" id="2_enemy"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/objects/respawn_altar/respawn_altar.tscn" id="5_altar"]
 [ext_resource type="PackedScene" path="res://scenes/objects/memory_fragment/memory_fragment.tscn" id="6_memory"]
 [ext_resource type="PackedScene" path="res://scenes/objects/arena_exit/arena_exit.tscn" id="7_exit"]
+[ext_resource type="PackedScene" path="res://scenes/systems/encounter_zone/encounter_zone.tscn" id="8_encounter"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_horizontal"]
 size = Vector2(2400, 40)
@@ -173,6 +174,26 @@ position = Vector2(1750, 240)
 spawn_id = &"enemy_spawn_04"
 
 [node name="Pickups" type="Node2D" parent="."]
+
+[node name="EncounterZones" type="Node2D" parent="."]
+
+[node name="EncounterZone01" parent="EncounterZones" instance=ExtResource("8_encounter")]
+position = Vector2(500, 1165)
+encounter_id = &"encounter_01"
+enemy_spawn_ids = Array[StringName]([&"enemy_spawn_01"])
+zone_size = Vector2(50, 390)
+
+[node name="EncounterZone02" parent="EncounterZones" instance=ExtResource("8_encounter")]
+position = Vector2(2000, 950)
+encounter_id = &"encounter_02"
+enemy_spawn_ids = Array[StringName]([&"enemy_spawn_02", &"enemy_spawn_03"])
+zone_size = Vector2(710, 60)
+
+[node name="EncounterZone03" parent="EncounterZones" instance=ExtResource("8_encounter")]
+position = Vector2(400, 450)
+encounter_id = &"encounter_03"
+enemy_spawn_ids = Array[StringName]([&"enemy_spawn_04"])
+zone_size = Vector2(700, 60)
 
 [node name="PlayerSpawn" type="Marker2D" parent="."]
 position = Vector2(220, 1180)

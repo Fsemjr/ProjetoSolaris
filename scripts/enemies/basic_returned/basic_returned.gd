@@ -39,6 +39,7 @@ var death_position: Vector2 = Vector2.ZERO
 var has_died: bool = false
 var has_dropped_corrupted_light_core: bool = false
 var has_started_death_removal: bool = false
+var is_encounter_active: bool = true
 var _initial_collision_layer: int = 0
 var _initial_collision_mask: int = 0
 var _last_health: float = 0.0
@@ -90,9 +91,64 @@ func reset_enemy(spawn_transform: Transform2D) -> void:
 	_restore_area(attack_area, attack_area_collision, true, false, false)
 	_restore_area(attack_hitbox, attack_collision, false, false, true)
 
-	visuals.modulate = Color.WHITE
 	current_state = State.IDLE
-	set_physics_process(true)
+	set_encounter_active(is_encounter_active)
+
+
+func set_encounter_active(active: bool) -> void:
+	is_encounter_active = active
+	if current_state == State.DEAD or has_died:
+		if not active:
+			_cancel_attack()
+		return
+
+	chase_target = null
+	is_target_in_attack_range = false
+	velocity = Vector2.ZERO
+	current_state = State.IDLE
+	attack_cooldown_timer.stop()
+	attack_duration_timer.stop()
+	_end_attack_window()
+
+	if active:
+		_restore_area(
+			hurtbox_component,
+			hurtbox_collision,
+			true,
+			true,
+			false
+		)
+		_restore_area(
+			detection_area,
+			detection_collision,
+			true,
+			false,
+			false
+		)
+		_restore_area(
+			attack_area,
+			attack_area_collision,
+			true,
+			false,
+			false
+		)
+		_restore_area(
+			attack_hitbox,
+			attack_collision,
+			false,
+			false,
+			true
+		)
+		visuals.modulate = Color.WHITE
+		set_physics_process(true)
+		return
+
+	_disable_area(hurtbox_component, hurtbox_collision)
+	_disable_area(detection_area, detection_collision)
+	_disable_area(attack_area, attack_area_collision)
+	_disable_area(attack_hitbox, attack_collision)
+	visuals.modulate = Color(0.5, 0.56, 0.64, 0.5)
+	set_physics_process(false)
 
 
 func _restore_area(
@@ -108,6 +164,9 @@ func _restore_area(
 
 
 func _physics_process(_delta: float) -> void:
+	if not is_encounter_active:
+		velocity = Vector2.ZERO
+		return
 	match current_state:
 		State.CHASE:
 			_chase_player()
@@ -144,7 +203,7 @@ func _enter_idle() -> void:
 
 
 func _on_detection_area_body_entered(body: Node2D) -> void:
-	if current_state == State.DEAD:
+	if not is_encounter_active or current_state == State.DEAD:
 		return
 
 	var detected_player: CharacterBody2D = body as CharacterBody2D
@@ -156,14 +215,18 @@ func _on_detection_area_body_entered(body: Node2D) -> void:
 
 
 func _on_detection_area_body_exited(body: Node2D) -> void:
-	if body != chase_target or current_state == State.DEAD:
+	if (
+		not is_encounter_active
+		or body != chase_target
+		or current_state == State.DEAD
+	):
 		return
 
 	_enter_idle()
 
 
 func _on_attack_area_body_entered(body: Node2D) -> void:
-	if current_state == State.DEAD:
+	if not is_encounter_active or current_state == State.DEAD:
 		return
 
 	var detected_player: CharacterBody2D = body as CharacterBody2D
@@ -177,7 +240,11 @@ func _on_attack_area_body_entered(body: Node2D) -> void:
 
 
 func _on_attack_area_body_exited(body: Node2D) -> void:
-	if body != chase_target or current_state == State.DEAD:
+	if (
+		not is_encounter_active
+		or body != chase_target
+		or current_state == State.DEAD
+	):
 		return
 
 	is_target_in_attack_range = false
@@ -189,7 +256,11 @@ func _on_attack_area_body_exited(body: Node2D) -> void:
 
 
 func _try_attack() -> void:
-	if current_state != State.ATTACK or not is_target_in_attack_range:
+	if (
+		not is_encounter_active
+		or current_state != State.ATTACK
+		or not is_target_in_attack_range
+	):
 		return
 	if not attack_cooldown_timer.is_stopped() or not attack_duration_timer.is_stopped():
 		return

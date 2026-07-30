@@ -1801,7 +1801,7 @@ a tarefa receber `[x]`.
 
 ## TASK-042 — Criar progressão por encontros
 
-**Status:** `[ ]`
+**Status:** `[x]`
 
 ### Objetivo
 
@@ -1828,6 +1828,11 @@ Organizar os quatro inimigos em encontros progressivos, evitando que todos ataqu
 * progresso não duplica;
 * o percurso apresenta aumento de dificuldade;
 * não existem erros.
+
+### Validação
+
+Implementação, validação técnica automatizada e validação manual do jogador
+concluídas.
 
 ---
 

@@ -3,11 +3,14 @@ extends Node2D
 @onready var entities: Node2D = $Entities
 @onready var objects: Node2D = $Objects
 @onready var pickups: Node2D = $Pickups
+@onready var encounter_zones: Node2D = $EncounterZones
 @onready var player: CharacterBody2D = $Entities/Player
 @onready var player_spawn: Marker2D = $PlayerSpawn
 @onready var player_hud: PlayerHUD = $CanvasLayer/PlayerHUD
 
 var _common_enemy_spawns: Array[Dictionary] = []
+var _encounter_spawn_ids: Dictionary = {}
+var _spawn_encounter_ids: Dictionary = {}
 
 const REQUIRED_ENEMY_SPAWN_COUNT: int = 4
 
@@ -39,8 +42,10 @@ func _ready() -> void:
 			player_hud.observe_arena_exit(arena_exit)
 
 	_register_common_enemy_spawns()
+	_configure_encounters()
 	for entity: Node in entities.get_children():
 		_connect_enemy_signals(entity)
+	_evaluate_all_encounter_completions()
 	_evaluate_arena_objective()
 
 
@@ -126,6 +131,10 @@ func restore_common_enemies() -> void:
 			Transform2D.IDENTITY
 		)
 		enemy.call(&"reset_enemy", spawn_transform)
+		_apply_enemy_encounter_state(
+			enemy,
+			spawn.get("id", &"") as StringName
+		)
 
 
 func _connect_enemy_signals(entity: Node) -> void:
@@ -170,6 +179,7 @@ func _on_enemy_died(enemy: Node2D, death_position: Vector2) -> void:
 	if spawn_id != &"":
 		if GameState.register_defeated_enemy_spawn(spawn_id):
 			_evaluate_arena_objective()
+			_evaluate_encounter_completion_for_spawn(spawn_id)
 	if not enemy.has_method(&"claim_corrupted_light_core_scene"):
 		return
 
@@ -200,6 +210,142 @@ func _find_spawn_id_for_enemy(enemy: Node2D) -> StringName:
 		if is_instance_valid(enemy_value) and enemy_value == enemy:
 			return spawn.get("id", &"") as StringName
 	return &""
+
+
+func _configure_encounters() -> void:
+	for child: Node in encounter_zones.get_children():
+		var zone: EncounterZone = child as EncounterZone
+		if zone == null:
+			continue
+		if zone.encounter_id == &"" or zone.enemy_spawn_ids.is_empty():
+			push_error("EncounterZone requires an ID and spawn IDs.")
+			continue
+		if _encounter_spawn_ids.has(zone.encounter_id):
+			push_error("Encounter IDs must be unique.")
+			continue
+
+		var valid_spawn_ids: Array[StringName] = []
+		for spawn_id: StringName in zone.enemy_spawn_ids:
+			if spawn_id == &"" or not _has_registered_spawn(spawn_id):
+				push_error("EncounterZone references an invalid spawn ID.")
+				continue
+			if _spawn_encounter_ids.has(spawn_id):
+				push_error("Enemy spawn belongs to more than one encounter.")
+				continue
+			valid_spawn_ids.append(spawn_id)
+			_spawn_encounter_ids[spawn_id] = zone.encounter_id
+
+		if valid_spawn_ids.is_empty():
+			push_error("EncounterZone has no valid registered spawns.")
+			continue
+		_encounter_spawn_ids[zone.encounter_id] = valid_spawn_ids
+		if not zone.encounter_activated.is_connected(
+			_on_encounter_zone_activated
+		):
+			zone.encounter_activated.connect(
+				_on_encounter_zone_activated
+			)
+
+	for spawn: Dictionary in _common_enemy_spawns:
+		var enemy_value: Variant = spawn.get("enemy")
+		if not is_instance_valid(enemy_value):
+			continue
+		_apply_enemy_encounter_state(
+			enemy_value as Node2D,
+			spawn.get("id", &"") as StringName
+		)
+
+
+func _has_registered_spawn(spawn_id: StringName) -> bool:
+	for spawn: Dictionary in _common_enemy_spawns:
+		if spawn.get("id", &"") as StringName == spawn_id:
+			return true
+	return false
+
+
+func _on_encounter_zone_activated(
+	encounter_id: StringName,
+	_enemy_spawn_ids: Array[StringName]
+) -> void:
+	var spawn_ids: Array[StringName] = _get_encounter_spawn_ids(
+		encounter_id
+	)
+	for spawn_id: StringName in spawn_ids:
+		var enemy: Node2D = _find_enemy_for_spawn(spawn_id)
+		if enemy != null:
+			_apply_enemy_encounter_state(enemy, spawn_id)
+	_evaluate_encounter_completion(encounter_id)
+
+
+func _find_enemy_for_spawn(spawn_id: StringName) -> Node2D:
+	for spawn: Dictionary in _common_enemy_spawns:
+		if spawn.get("id", &"") as StringName != spawn_id:
+			continue
+		var enemy_value: Variant = spawn.get("enemy")
+		if is_instance_valid(enemy_value):
+			return enemy_value as Node2D
+	return null
+
+
+func _apply_enemy_encounter_state(
+	enemy: Node2D,
+	spawn_id: StringName
+) -> void:
+	if enemy == null or not enemy.has_method(&"set_encounter_active"):
+		push_error("Common enemy requires set_encounter_active().")
+		return
+	var encounter_id: StringName = (
+		_spawn_encounter_ids.get(spawn_id, &"") as StringName
+	)
+	var active: bool = (
+		encounter_id != &""
+		and GameState.is_encounter_activated(encounter_id)
+	)
+	enemy.call(&"set_encounter_active", active)
+
+
+func _evaluate_encounter_completion_for_spawn(
+	spawn_id: StringName
+) -> void:
+	var encounter_id: StringName = (
+		_spawn_encounter_ids.get(spawn_id, &"") as StringName
+	)
+	if encounter_id != &"":
+		_evaluate_encounter_completion(encounter_id)
+
+
+func _evaluate_all_encounter_completions() -> void:
+	for encounter_id_value: Variant in _encounter_spawn_ids.keys():
+		_evaluate_encounter_completion(
+			encounter_id_value as StringName
+		)
+
+
+func _evaluate_encounter_completion(
+	encounter_id: StringName
+) -> void:
+	if (
+		not GameState.is_encounter_activated(encounter_id)
+		or GameState.is_encounter_completed(encounter_id)
+	):
+		return
+	for spawn_id: StringName in _get_encounter_spawn_ids(encounter_id):
+		if not GameState.has_defeated_enemy_spawn(spawn_id):
+			return
+	GameState.complete_encounter(encounter_id)
+
+
+func _get_encounter_spawn_ids(
+	encounter_id: StringName
+) -> Array[StringName]:
+	var stored_value: Variant = _encounter_spawn_ids.get(
+		encounter_id,
+		[]
+	)
+	if stored_value is Array[StringName]:
+		return stored_value as Array[StringName]
+	var spawn_ids: Array[StringName] = []
+	return spawn_ids
 
 
 func _connect_objective_signals() -> void:

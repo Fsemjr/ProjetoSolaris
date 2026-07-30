@@ -14,6 +14,8 @@ signal objective_progress_changed(
 )
 signal arena_exit_unlocked
 signal arena_completed
+signal encounter_activated(encounter_id: StringName)
+signal encounter_completed(encounter_id: StringName)
 
 var death_count: int = 0
 var current_respawn_position: Vector2 = Vector2.ZERO
@@ -23,6 +25,8 @@ var collected_memory_ids: Array[StringName] = []
 var defeated_enemy_spawn_ids: Array[StringName] = []
 var arena_exit_is_unlocked: bool = false
 var arena_is_completed: bool = false
+var activated_encounter_ids: Array[StringName] = []
+var completed_encounter_ids: Array[StringName] = []
 
 var _required_enemy_spawn_count: int = 0
 var _last_progress_spawn_count: int = -1
@@ -101,6 +105,39 @@ func has_defeated_enemy_spawn(spawn_id: StringName) -> bool:
 
 func get_defeated_enemy_spawn_count() -> int:
 	return defeated_enemy_spawn_ids.size()
+
+
+func activate_encounter(encounter_id: StringName) -> bool:
+	if encounter_id == &"" or activated_encounter_ids.has(encounter_id):
+		return false
+	activated_encounter_ids.append(encounter_id)
+	encounter_activated.emit(encounter_id)
+	return true
+
+
+func complete_encounter(encounter_id: StringName) -> bool:
+	if (
+		encounter_id == &""
+		or not activated_encounter_ids.has(encounter_id)
+		or completed_encounter_ids.has(encounter_id)
+	):
+		return false
+	completed_encounter_ids.append(encounter_id)
+	encounter_completed.emit(encounter_id)
+	return true
+
+
+func is_encounter_activated(encounter_id: StringName) -> bool:
+	return encounter_id != &"" and activated_encounter_ids.has(encounter_id)
+
+
+func is_encounter_completed(encounter_id: StringName) -> bool:
+	return encounter_id != &"" and completed_encounter_ids.has(encounter_id)
+
+
+func clear_encounter_progress() -> void:
+	activated_encounter_ids.clear()
+	completed_encounter_ids.clear()
 
 
 func evaluate_arena_objective(required_spawn_count: int) -> bool:
@@ -193,3 +230,4 @@ func reset_run_state() -> void:
 	clear_respawn_point()
 	clear_memories()
 	clear_arena_progress()
+	clear_encounter_progress()

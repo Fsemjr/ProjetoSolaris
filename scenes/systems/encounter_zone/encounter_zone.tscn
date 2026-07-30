@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/systems/encounter_zone.gd" id="1_zone"]
+
+[sub_resource type="RectangleShape2D" id="Rectangle_zone"]
+size = Vector2(100, 100)
+
+[node name="EncounterZone" type="Area2D"]
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+script = ExtResource("1_zone")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("Rectangle_zone")
+
+[node name="DebugVisual" type="Polygon2D" parent="."]
+z_index = 5
+color = Color(0.2, 0.75, 1, 0.18)
+polygon = PackedVector2Array(-50, -50, 50, -50, 50, 50, -50, 50)

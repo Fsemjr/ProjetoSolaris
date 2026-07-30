@@ -29,6 +29,8 @@ extends Control
 )
 @onready var death_counter_label: Label = $DeathCounterLabel
 @onready var interaction_prompt: Label = $InteractionPrompt
+@onready var encounter_message: Label = $EncounterMessage
+@onready var encounter_message_timer: Timer = $EncounterMessageTimer
 @onready var death_overlay: ColorRect = $DeathOverlay
 @onready var death_message: Label = $DeathOverlay/DeathMessage
 @onready var objective_title: Label = $ObjectivePanel/ObjectiveContent/Title
@@ -75,6 +77,8 @@ func _ready() -> void:
 	death_overlay.modulate.a = 0.0
 	death_overlay.hide()
 	completion_overlay.hide()
+	_hide_encounter_message()
+	encounter_message_timer.timeout.connect(_hide_encounter_message)
 	if GameState != null and is_instance_valid(GameState):
 		if not GameState.death_count_changed.is_connected(
 			_on_death_count_changed
@@ -98,6 +102,18 @@ func _ready() -> void:
 			_on_arena_completed
 		):
 			GameState.arena_completed.connect(_on_arena_completed)
+		if not GameState.encounter_activated.is_connected(
+			_on_encounter_activated
+		):
+			GameState.encounter_activated.connect(
+				_on_encounter_activated
+			)
+		if not GameState.encounter_completed.is_connected(
+			_on_encounter_completed
+		):
+			GameState.encounter_completed.connect(
+				_on_encounter_completed
+			)
 		_on_death_count_changed(GameState.death_count)
 		_on_objective_progress_changed(
 			GameState.get_defeated_enemy_spawn_count(),
@@ -148,6 +164,7 @@ func _disconnect_player_lifecycle() -> void:
 
 
 func _on_player_died() -> void:
+	_hide_encounter_message()
 	_stop_instability_effect()
 	_replace_death_transition()
 	death_overlay.show()
@@ -479,9 +496,32 @@ func _on_arena_exit_unlocked() -> void:
 
 
 func _on_arena_completed() -> void:
+	_hide_encounter_message()
 	_hide_interaction_prompt()
 	death_overlay.hide()
 	completion_overlay.show()
+
+
+func _on_encounter_activated(_encounter_id: StringName) -> void:
+	_show_encounter_message("ENCOUNTER STARTED")
+
+
+func _on_encounter_completed(_encounter_id: StringName) -> void:
+	_show_encounter_message("ENCOUNTER CLEARED")
+
+
+func _show_encounter_message(message: String) -> void:
+	if death_overlay.visible or completion_overlay.visible:
+		return
+	encounter_message_timer.stop()
+	encounter_message.text = message
+	encounter_message.show()
+	encounter_message_timer.start()
+
+
+func _hide_encounter_message() -> void:
+	encounter_message_timer.stop()
+	encounter_message.hide()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -826,3 +866,15 @@ func _exit_tree() -> void:
 			)
 		if GameState.arena_completed.is_connected(_on_arena_completed):
 			GameState.arena_completed.disconnect(_on_arena_completed)
+		if GameState.encounter_activated.is_connected(
+			_on_encounter_activated
+		):
+			GameState.encounter_activated.disconnect(
+				_on_encounter_activated
+			)
+		if GameState.encounter_completed.is_connected(
+			_on_encounter_completed
+		):
+			GameState.encounter_completed.disconnect(
+				_on_encounter_completed
+			)
