@@ -1874,7 +1874,7 @@ concluídas.
 
 ## TASK-044 — Adicionar texto narrativo à memória
 
-**Status:** `[ ]`
+**Status:** `[x]`
 
 ### Objetivo
 
@@ -1900,6 +1900,11 @@ Dar função narrativa real ao fragmento de memória existente.
 * controles retornam corretamente;
 * memória não reaparece após morte;
 * não existem erros.
+
+### Validação
+
+Implementação, validação técnica automatizada e validação manual do jogador
+concluídas.
 
 ---
 

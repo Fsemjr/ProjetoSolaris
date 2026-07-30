@@ -4,8 +4,21 @@ extends Area2D
 signal interaction_available(memory: MemoryFragment)
 signal interaction_unavailable(memory: MemoryFragment)
 signal memory_remembered(memory: MemoryFragment, memory_id: StringName)
+signal memory_opened(
+	memory: MemoryFragment,
+	memory_id: StringName,
+	title: String,
+	text: String
+)
 
 @export var memory_id: StringName = &"prototype_memory_01"
+@export var memory_title: String = "ECHO OF THE FALL"
+@export_multiline var memory_text: String = (
+	"When the sky split, no one understood the light that fell upon us.\n\n"
+	+ "Some called it a blessing. Others, corruption.\n\n"
+	+ "I remember only the sound...\n"
+	+ "like glass breaking inside the world."
+)
 
 @onready var visual: Polygon2D = $Visual
 @onready var interaction_area: Area2D = $InteractionArea
@@ -43,11 +56,17 @@ func remember() -> bool:
 		or not is_instance_valid(nearby_player)
 	):
 		return false
-	is_collected = true
 	var was_registered: bool = GameState.register_memory(memory_id)
+	is_collected = true
 	interaction_unavailable.emit(self)
 	if was_registered:
 		memory_remembered.emit(self, memory_id)
+		memory_opened.emit(
+			self,
+			memory_id,
+			memory_title,
+			memory_text
+		)
 	visual.hide()
 	interaction_area.set_deferred(&"monitoring", false)
 	queue_free()

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/characters/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/basic_returned/basic_returned.tscn" id="2_enemy"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/objects/arena_exit/arena_exit.tscn" id="7_exit"]
 [ext_resource type="PackedScene" path="res://scenes/systems/encounter_zone/encounter_zone.tscn" id="8_encounter"]
 [ext_resource type="PackedScene" path="res://scenes/objects/progression_gate/progression_gate.tscn" id="9_gate"]
+[ext_resource type="PackedScene" path="res://scenes/ui/memory_panel/memory_panel.tscn" id="10_memory_panel"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_horizontal"]
 size = Vector2(2400, 40)
@@ -216,3 +217,5 @@ position = Vector2(220, 1180)
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="PlayerHUD" parent="CanvasLayer" instance=ExtResource("4_hud")]
+
+[node name="MemoryPanel" parent="CanvasLayer" instance=ExtResource("10_memory_panel")]

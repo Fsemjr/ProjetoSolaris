@@ -4,6 +4,7 @@ enum PlayerState {
 	ACTIVE,
 	DEAD,
 	COMPLETED,
+	READING_MEMORY,
 }
 
 signal player_respawned(respawn_position: Vector2)
@@ -175,6 +176,41 @@ func _choose_respawn_position() -> Vector2:
 		"PlayerSpawn is unavailable; using the player's initial position."
 	)
 	return _initial_spawn_position
+
+
+func enter_reading_memory() -> bool:
+	if player_state != PlayerState.ACTIVE or health_component.is_dead:
+		return false
+
+	_stop_damage_flash()
+	player_state = PlayerState.READING_MEMORY
+	enter_reading_memory_state()
+	player_corruption.enter_reading_memory_state()
+	combat_controller.call(&"enter_reading_memory_state")
+	collapse_damage_timer.stop()
+	hurtbox_component.monitoring = false
+	hurtbox_component.monitorable = false
+	hurtbox_collision.disabled = true
+	velocity = Vector2.ZERO
+	return true
+
+
+func exit_reading_memory() -> void:
+	if player_state != PlayerState.READING_MEMORY:
+		return
+
+	hurtbox_component.monitoring = true
+	hurtbox_component.monitorable = true
+	hurtbox_collision.disabled = false
+	player_corruption.exit_reading_memory_state()
+	combat_controller.call(&"exit_reading_memory_state")
+	exit_reading_memory_state()
+	velocity = Vector2.ZERO
+	player_state = PlayerState.ACTIVE
+
+
+func is_reading_memory() -> bool:
+	return player_state == PlayerState.READING_MEMORY
 
 
 func _on_arena_completed() -> void:

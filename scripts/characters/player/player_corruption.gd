@@ -6,6 +6,7 @@ enum State {
 	ABSORBING,
 	DEAD,
 	COMPLETED,
+	READING_MEMORY,
 }
 
 @onready var player: CharacterBody2D = get_parent() as CharacterBody2D
@@ -101,6 +102,35 @@ func enter_completed_state() -> void:
 		_disconnect_core_signals(core_to_cancel)
 		core_to_cancel.cancel_absorption(player)
 	active_core = null
+
+
+func enter_reading_memory_state() -> bool:
+	if (
+		current_state == State.DEAD
+		or current_state == State.COMPLETED
+		or current_state == State.READING_MEMORY
+	):
+		return false
+
+	var core_to_cancel: CorruptedLightCore = active_core
+	current_state = State.READING_MEMORY
+	set_process(false)
+	collapse_damage_timer.stop()
+	player.velocity = Vector2.ZERO
+	if core_to_cancel != null and is_instance_valid(core_to_cancel):
+		_disconnect_core_signals(core_to_cancel)
+		core_to_cancel.cancel_absorption(player)
+	active_core = null
+	return true
+
+
+func exit_reading_memory_state() -> void:
+	if current_state != State.READING_MEMORY:
+		return
+	active_core = null
+	current_state = State.IDLE
+	set_process(true)
+	_apply_instability_penalties()
 
 
 func _try_start_absorption() -> void:
@@ -228,6 +258,9 @@ func _on_instability_level_changed(level: int) -> void:
 func _apply_instability_penalties() -> void:
 	if health_component.is_dead:
 		hurtbox_component.incoming_damage_multiplier = 1.0
+		collapse_damage_timer.stop()
+		return
+	if current_state == State.READING_MEMORY:
 		collapse_damage_timer.stop()
 		return
 

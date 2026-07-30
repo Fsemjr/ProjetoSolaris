@@ -8,6 +8,7 @@ extends Node2D
 @onready var player: CharacterBody2D = $Entities/Player
 @onready var player_spawn: Marker2D = $PlayerSpawn
 @onready var player_hud: PlayerHUD = $CanvasLayer/PlayerHUD
+@onready var memory_panel: MemoryPanel = $CanvasLayer/MemoryPanel
 
 var _common_enemy_spawns: Array[Dictionary] = []
 var _encounter_spawn_ids: Dictionary = {}
@@ -20,6 +21,10 @@ func _ready() -> void:
 	_connect_objective_signals()
 	_configure_player_spawn()
 	_bind_player_hud()
+	if not memory_panel.memory_closed.is_connected(
+		_on_memory_panel_closed
+	):
+		memory_panel.memory_closed.connect(_on_memory_panel_closed)
 	if player.has_signal(&"player_died"):
 		player.connect(&"player_died", _on_player_died)
 	else:
@@ -37,7 +42,7 @@ func _ready() -> void:
 			player_hud.observe_altar(altar)
 		var memory: MemoryFragment = object as MemoryFragment
 		if memory != null and not memory.is_queued_for_deletion():
-			player_hud.observe_memory(memory)
+			_observe_memory(memory)
 		var arena_exit: ArenaExit = object as ArenaExit
 		if arena_exit != null:
 			player_hud.observe_arena_exit(arena_exit)
@@ -172,6 +177,33 @@ func _bind_player_hud() -> void:
 		corruption_component
 	)
 	player_hud.bind_player_lifecycle(player)
+
+
+func _observe_memory(memory: MemoryFragment) -> void:
+	player_hud.observe_memory(memory)
+	if not memory.memory_opened.is_connected(_on_memory_opened):
+		memory.memory_opened.connect(_on_memory_opened)
+
+
+func _on_memory_opened(
+	_memory: MemoryFragment,
+	memory_id: StringName,
+	title: String,
+	text: String
+) -> void:
+	if memory_panel.is_open or not player.enter_reading_memory():
+		return
+	if not memory_panel.open_memory(memory_id, title, text):
+		player.exit_reading_memory()
+		return
+	player_hud.set_memory_panel_active(true)
+	get_tree().paused = true
+
+
+func _on_memory_panel_closed(_memory_id: StringName) -> void:
+	player.exit_reading_memory()
+	player_hud.set_memory_panel_active(false)
+	get_tree().paused = false
 
 
 func _on_enemy_died(enemy: Node2D, death_position: Vector2) -> void:
@@ -409,6 +441,8 @@ func _on_encounter_completed_for_gates(
 
 
 func _exit_tree() -> void:
+	if get_tree() != null and get_tree().paused:
+		get_tree().paused = false
 	if GameState == null or not is_instance_valid(GameState):
 		return
 	if GameState.memory_collected.is_connected(_on_objective_state_changed):

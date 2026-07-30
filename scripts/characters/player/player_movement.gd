@@ -8,6 +8,7 @@ enum MovementState {
 	DODGING,
 	DEAD,
 	COMPLETED,
+	READING_MEMORY,
 }
 
 @export var movement_speed: float = 220.0
@@ -39,6 +40,7 @@ func _physics_process(_delta: float) -> void:
 	if (
 		movement_state == MovementState.DEAD
 		or movement_state == MovementState.COMPLETED
+		or movement_state == MovementState.READING_MEMORY
 	):
 		velocity = Vector2.ZERO
 		return
@@ -121,6 +123,29 @@ func enter_completed_state() -> void:
 
 func is_completed_state() -> bool:
 	return movement_state == MovementState.COMPLETED
+
+
+func enter_reading_memory_state() -> bool:
+	if (
+		movement_state == MovementState.DEAD
+		or movement_state == MovementState.COMPLETED
+		or movement_state == MovementState.READING_MEMORY
+	):
+		return false
+	cancel_dodge()
+	dodge_duration_timer.stop()
+	movement_state = MovementState.READING_MEMORY
+	velocity = Vector2.ZERO
+	set_physics_process(false)
+	return true
+
+
+func exit_reading_memory_state() -> void:
+	if movement_state != MovementState.READING_MEMORY:
+		return
+	velocity = Vector2.ZERO
+	movement_state = MovementState.NORMAL
+	set_physics_process(true)
 
 
 func _can_start_dodge() -> bool:

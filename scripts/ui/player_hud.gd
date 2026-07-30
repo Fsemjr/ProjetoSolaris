@@ -72,6 +72,7 @@ var _observed_gates: Array[ProgressionGate] = []
 var _available_gates: Array[ProgressionGate] = []
 var _active_prompt_gate: ProgressionGate = null
 var _restart_requested: bool = false
+var _memory_panel_active: bool = false
 
 const REQUIRED_ENEMY_SPAWN_COUNT: int = 4
 
@@ -411,6 +412,17 @@ func observe_gate(gate: ProgressionGate) -> void:
 		_on_gate_interaction_available(gate)
 
 
+func set_memory_panel_active(active: bool) -> void:
+	if _memory_panel_active == active:
+		return
+	_memory_panel_active = active
+	if active:
+		_hide_encounter_message()
+		_hide_interaction_prompt()
+	else:
+		_refresh_interaction_prompt()
+
+
 func _disconnect_player_components() -> void:
 	if health_component != null and is_instance_valid(health_component):
 		if health_component.health_changed.is_connected(
@@ -543,7 +555,11 @@ func _on_encounter_completed(_encounter_id: StringName) -> void:
 
 
 func _show_encounter_message(message: String) -> void:
-	if death_overlay.visible or completion_overlay.visible:
+	if (
+		_memory_panel_active
+		or death_overlay.visible
+		or completion_overlay.visible
+	):
 		return
 	encounter_message_timer.stop()
 	encounter_message.text = message
@@ -795,7 +811,7 @@ func _on_gate_tree_exiting(gate: ProgressionGate) -> void:
 
 
 func _refresh_interaction_prompt() -> void:
-	if completion_overlay.visible:
+	if _memory_panel_active or completion_overlay.visible:
 		_hide_interaction_prompt()
 		return
 	if _absorbing_core != null and is_instance_valid(_absorbing_core):

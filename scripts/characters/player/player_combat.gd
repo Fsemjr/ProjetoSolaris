@@ -19,6 +19,7 @@ var is_attacking: bool = false
 var is_on_cooldown: bool = false
 var is_dead: bool = false
 var is_completed: bool = false
+var is_reading_memory: bool = false
 var current_attack_damage: float = 0.0
 
 
@@ -31,7 +32,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	if is_dead or is_completed:
+	if is_dead or is_completed or is_reading_memory:
 		return
 
 	if not is_attacking:
@@ -48,7 +49,13 @@ func _update_aim(mouse_position: Vector2) -> void:
 
 
 func _try_attack() -> void:
-	if is_dead or is_completed or is_attacking or is_on_cooldown:
+	if (
+		is_dead
+		or is_completed
+		or is_reading_memory
+		or is_attacking
+		or is_on_cooldown
+	):
 		return
 
 	is_attacking = true
@@ -62,7 +69,12 @@ func _try_attack() -> void:
 
 
 func _set_hitbox_active(is_active: bool) -> void:
-	var should_activate: bool = is_active and not is_dead and not is_completed
+	var should_activate: bool = (
+		is_active
+		and not is_dead
+		and not is_completed
+		and not is_reading_memory
+	)
 	if should_activate:
 		attack_hitbox.begin_attack(current_attack_damage, attack_owner_node)
 	else:
@@ -89,7 +101,12 @@ func _finish_attack() -> void:
 
 
 func _set_scythe_trail_visible(should_show: bool) -> void:
-	scythe_trail.visible = should_show and not is_dead and not is_completed
+	scythe_trail.visible = (
+		should_show
+		and not is_dead
+		and not is_completed
+		and not is_reading_memory
+	)
 
 
 func enter_dead_state() -> void:
@@ -128,6 +145,31 @@ func enter_completed_state() -> void:
 	animation_player.stop()
 	_finish_attack()
 	_set_scythe_trail_visible(false)
+
+
+func enter_reading_memory_state() -> bool:
+	if is_dead or is_completed or is_reading_memory:
+		return false
+	is_reading_memory = true
+	set_process(false)
+	attack_cooldown_timer.stop()
+	is_on_cooldown = false
+	animation_player.stop()
+	_finish_attack()
+	_set_scythe_trail_visible(false)
+	return true
+
+
+func exit_reading_memory_state() -> void:
+	if not is_reading_memory or is_dead or is_completed:
+		return
+	attack_cooldown_timer.stop()
+	animation_player.stop()
+	_finish_attack()
+	_set_scythe_trail_visible(false)
+	is_on_cooldown = false
+	is_reading_memory = false
+	set_process(true)
 
 
 func _on_animation_finished(animation_name: StringName) -> void:
