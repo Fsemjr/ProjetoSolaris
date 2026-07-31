@@ -11,6 +11,7 @@ extends Node2D
 @onready var memory_panel: MemoryPanel = $CanvasLayer/MemoryPanel
 @onready var tutorial_prompt: TutorialPrompt = $CanvasLayer/TutorialPrompt
 @onready var tutorial_controller: TutorialController = $TutorialController
+@onready var pause_menu: PauseMenu = $CanvasLayer/PauseMenu
 
 var _common_enemy_spawns: Array[Dictionary] = []
 var _encounter_spawn_ids: Dictionary = {}
@@ -24,6 +25,7 @@ func _ready() -> void:
 	_configure_player_spawn()
 	_bind_player_hud()
 	tutorial_controller.configure(player, player_hud, tutorial_prompt)
+	pause_menu.configure(player, tutorial_controller)
 	if not memory_panel.memory_closed.is_connected(
 		_on_memory_panel_closed
 	):

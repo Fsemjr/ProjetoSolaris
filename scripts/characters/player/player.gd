@@ -213,6 +213,13 @@ func is_reading_memory() -> bool:
 	return player_state == PlayerState.READING_MEMORY
 
 
+func can_open_pause() -> bool:
+	return (
+		player_state == PlayerState.ACTIVE
+		and not health_component.is_dead
+	)
+
+
 func _on_arena_completed() -> void:
 	if player_state != PlayerState.ACTIVE:
 		return

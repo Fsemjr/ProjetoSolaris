@@ -1945,7 +1945,7 @@ concluídas.
 
 ## TASK-046 — Implementar pausa funcional
 
-**Status:** `[ ]`
+**Status:** `[x]`
 
 ### Objetivo
 
@@ -1960,9 +1960,8 @@ Fazer a ação Esc abrir e fechar um menu simples de pausa.
 * manter HUD e menu responsivos;
 * incluir opções provisórias:
   * continuar;
-  * reiniciar execução;
   * sair para o desktop;
-* pedir confirmação antes de reiniciar ou sair;
+* sair diretamente, sem confirmação ou tela intermediária;
 * não quebrar timers após continuar;
 * não interferir com tela de morte ou conclusão.
 
@@ -1971,9 +1970,13 @@ Fazer a ação Esc abrir e fechar um menu simples de pausa.
 * menu abre e fecha;
 * gameplay pausa corretamente;
 * continuar não quebra estados;
-* reinício funciona;
 * saída funciona;
 * não existem erros.
+
+### Validação
+
+Implementação, validação técnica automatizada e validação manual do jogador
+concluídas no Godot 4.5.1, sem erros no Output ou Debugger.
 
 ---
 

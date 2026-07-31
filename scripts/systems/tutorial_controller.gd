@@ -20,6 +20,7 @@ var _available_memories: Array[MemoryFragment] = []
 var _combat_context_active: bool = false
 var _absorbing_core: CorruptedLightCore = null
 var _memory_panel_active: bool = false
+var _pause_menu_active: bool = false
 var _player_is_dead: bool = false
 var _arena_is_completed: bool = false
 var _is_configured: bool = false
@@ -149,6 +150,11 @@ func observe_memory(memory: MemoryFragment) -> void:
 
 func set_memory_panel_active(active: bool) -> void:
 	_memory_panel_active = active
+	_refresh_prompt(true)
+
+
+func set_pause_menu_active(active: bool) -> void:
+	_pause_menu_active = active
 	_refresh_prompt(true)
 
 
@@ -337,6 +343,7 @@ func _refresh_prompt(immediate_hide: bool = false) -> void:
 		return
 	if (
 		_memory_panel_active
+		or _pause_menu_active
 		or _player_is_dead
 		or _arena_is_completed
 		or (_absorbing_core != null and is_instance_valid(_absorbing_core))
