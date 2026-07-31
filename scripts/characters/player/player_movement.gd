@@ -2,6 +2,7 @@ extends CharacterBody2D
 
 signal dodge_started
 signal dodge_ended
+signal movement_performed
 
 enum MovementState {
 	NORMAL,
@@ -23,6 +24,7 @@ var movement_state: MovementState = MovementState.NORMAL
 var last_movement_direction: Vector2 = Vector2.DOWN
 
 var _dodge_direction: Vector2 = Vector2.DOWN
+var _movement_input_active: bool = false
 
 
 func _ready() -> void:
@@ -58,6 +60,8 @@ func _physics_process(_delta: float) -> void:
 
 	if direction != Vector2.ZERO:
 		last_movement_direction = direction.normalized()
+	else:
+		_movement_input_active = false
 
 	if (
 		Input.is_action_just_pressed(&"dodge")
@@ -74,8 +78,16 @@ func _physics_process(_delta: float) -> void:
 		move_and_slide()
 		return
 
+	var previous_position: Vector2 = global_position
 	velocity = direction * movement_speed
 	move_and_slide()
+	if (
+		direction != Vector2.ZERO
+		and not _movement_input_active
+		and not global_position.is_equal_approx(previous_position)
+	):
+		_movement_input_active = true
+		movement_performed.emit()
 
 
 func is_dodging() -> bool:
@@ -94,6 +106,7 @@ func enter_dead_state() -> void:
 	dodge_duration_timer.stop()
 	dodge_cooldown_timer.stop()
 	movement_state = MovementState.DEAD
+	_movement_input_active = false
 	velocity = Vector2.ZERO
 	set_physics_process(false)
 
@@ -106,6 +119,7 @@ func exit_dead_state() -> void:
 	dodge_cooldown_timer.stop()
 	velocity = Vector2.ZERO
 	movement_state = MovementState.NORMAL
+	_movement_input_active = false
 	set_physics_process(true)
 
 
@@ -117,6 +131,7 @@ func enter_completed_state() -> void:
 	dodge_duration_timer.stop()
 	dodge_cooldown_timer.stop()
 	movement_state = MovementState.COMPLETED
+	_movement_input_active = false
 	velocity = Vector2.ZERO
 	set_physics_process(false)
 
@@ -135,6 +150,7 @@ func enter_reading_memory_state() -> bool:
 	cancel_dodge()
 	dodge_duration_timer.stop()
 	movement_state = MovementState.READING_MEMORY
+	_movement_input_active = false
 	velocity = Vector2.ZERO
 	set_physics_process(false)
 	return true
@@ -145,6 +161,7 @@ func exit_reading_memory_state() -> void:
 		return
 	velocity = Vector2.ZERO
 	movement_state = MovementState.NORMAL
+	_movement_input_active = false
 	set_physics_process(true)
 
 

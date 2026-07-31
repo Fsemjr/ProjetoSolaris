@@ -16,6 +16,7 @@ signal arena_exit_unlocked
 signal arena_completed
 signal encounter_activated(encounter_id: StringName)
 signal encounter_completed(encounter_id: StringName)
+signal tutorial_step_completed(step_id: StringName)
 
 var death_count: int = 0
 var current_respawn_position: Vector2 = Vector2.ZERO
@@ -27,6 +28,7 @@ var arena_exit_is_unlocked: bool = false
 var arena_is_completed: bool = false
 var activated_encounter_ids: Array[StringName] = []
 var completed_encounter_ids: Array[StringName] = []
+var completed_tutorial_steps: Array[StringName] = []
 
 var _required_enemy_spawn_count: int = 0
 var _last_progress_spawn_count: int = -1
@@ -140,6 +142,22 @@ func clear_encounter_progress() -> void:
 	completed_encounter_ids.clear()
 
 
+func complete_tutorial_step(step_id: StringName) -> bool:
+	if step_id == &"" or completed_tutorial_steps.has(step_id):
+		return false
+	completed_tutorial_steps.append(step_id)
+	tutorial_step_completed.emit(step_id)
+	return true
+
+
+func is_tutorial_step_completed(step_id: StringName) -> bool:
+	return step_id != &"" and completed_tutorial_steps.has(step_id)
+
+
+func clear_tutorial_progress() -> void:
+	completed_tutorial_steps.clear()
+
+
 func evaluate_arena_objective(required_spawn_count: int) -> bool:
 	_required_enemy_spawn_count = maxi(required_spawn_count, 0)
 	var memory_is_collected: bool = has_memory(REQUIRED_MEMORY_ID)
@@ -231,3 +249,4 @@ func reset_run_state() -> void:
 	clear_memories()
 	clear_arena_progress()
 	clear_encounter_progress()
+	clear_tutorial_progress()

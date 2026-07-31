@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=16 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/characters/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/basic_returned/basic_returned.tscn" id="2_enemy"]
@@ -10,6 +10,8 @@
 [ext_resource type="PackedScene" path="res://scenes/systems/encounter_zone/encounter_zone.tscn" id="8_encounter"]
 [ext_resource type="PackedScene" path="res://scenes/objects/progression_gate/progression_gate.tscn" id="9_gate"]
 [ext_resource type="PackedScene" path="res://scenes/ui/memory_panel/memory_panel.tscn" id="10_memory_panel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/tutorial_prompt/tutorial_prompt.tscn" id="11_tutorial_prompt"]
+[ext_resource type="Script" path="res://scripts/systems/tutorial_controller.gd" id="12_tutorial_controller"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_horizontal"]
 size = Vector2(2400, 40)
@@ -214,8 +216,13 @@ gate_size = Vector2(710, 36)
 [node name="PlayerSpawn" type="Marker2D" parent="."]
 position = Vector2(220, 1180)
 
+[node name="TutorialController" type="Node" parent="."]
+script = ExtResource("12_tutorial_controller")
+
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="PlayerHUD" parent="CanvasLayer" instance=ExtResource("4_hud")]
+
+[node name="TutorialPrompt" parent="CanvasLayer" instance=ExtResource("11_tutorial_prompt")]
 
 [node name="MemoryPanel" parent="CanvasLayer" instance=ExtResource("10_memory_panel")]

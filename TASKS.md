@@ -1910,7 +1910,7 @@ concluídas.
 
 ## TASK-045 — Criar tutorial contextual
 
-**Status:** `[ ]`
+**Status:** `[x]`
 
 ### Objetivo
 
@@ -1935,6 +1935,11 @@ Ensinar os controles e sistemas durante o percurso da fase sem criar uma tela lo
 * mensagens não ficam presas;
 * morte e respawn não duplicam tutoriais;
 * não existem erros.
+
+### Validação
+
+Implementação, validação técnica automatizada e validação manual do jogador
+concluídas.
 
 ---
 

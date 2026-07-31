@@ -73,6 +73,7 @@ var _available_gates: Array[ProgressionGate] = []
 var _active_prompt_gate: ProgressionGate = null
 var _restart_requested: bool = false
 var _memory_panel_active: bool = false
+var _tutorial_prompt_active: bool = false
 
 const REQUIRED_ENEMY_SPAWN_COUNT: int = 4
 
@@ -208,6 +209,7 @@ func _finish_death_overlay_hide() -> void:
 	death_overlay.modulate.a = 0.0
 	death_overlay.hide()
 	_death_transition = null
+	_refresh_interaction_prompt()
 
 
 func bind_player_components(
@@ -418,6 +420,16 @@ func set_memory_panel_active(active: bool) -> void:
 	_memory_panel_active = active
 	if active:
 		_hide_encounter_message()
+		_hide_interaction_prompt()
+	else:
+		_refresh_interaction_prompt()
+
+
+func set_tutorial_prompt_active(active: bool) -> void:
+	if _tutorial_prompt_active == active:
+		return
+	_tutorial_prompt_active = active
+	if active:
 		_hide_interaction_prompt()
 	else:
 		_refresh_interaction_prompt()
@@ -811,7 +823,12 @@ func _on_gate_tree_exiting(gate: ProgressionGate) -> void:
 
 
 func _refresh_interaction_prompt() -> void:
-	if _memory_panel_active or completion_overlay.visible:
+	if (
+		_memory_panel_active
+		or _tutorial_prompt_active
+		or death_overlay.visible
+		or completion_overlay.visible
+	):
 		_hide_interaction_prompt()
 		return
 	if _absorbing_core != null and is_instance_valid(_absorbing_core):

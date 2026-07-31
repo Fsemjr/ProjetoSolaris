@@ -1,6 +1,8 @@
 class_name PlayerCorruption
 extends Node
 
+signal absorption_succeeded(core: CorruptedLightCore)
+
 enum State {
 	IDLE,
 	ABSORBING,
@@ -223,6 +225,7 @@ func _on_absorption_completed(
 	var instability_amount: float = core.instability_amount
 	_finish_absorption_state(core)
 	corruption_component.absorb(light_amount, instability_amount)
+	absorption_succeeded.emit(core)
 	core.queue_free()
 
 

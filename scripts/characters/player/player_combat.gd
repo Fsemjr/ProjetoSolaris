@@ -1,5 +1,7 @@
 extends Node2D
 
+signal attack_performed
+
 @export var base_damage: float = 20.0
 @export var attack_cooldown: float = 0.5
 @export var attack_duration: float = 0.15
@@ -66,6 +68,7 @@ func _try_attack() -> void:
 
 	var playback_speed: float = 1.0 / maxf(attack_duration, 0.001)
 	animation_player.play(&"attack", -1.0, playback_speed)
+	attack_performed.emit()
 
 
 func _set_hitbox_active(is_active: bool) -> void:

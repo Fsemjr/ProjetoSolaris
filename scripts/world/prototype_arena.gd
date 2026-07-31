@@ -9,6 +9,8 @@ extends Node2D
 @onready var player_spawn: Marker2D = $PlayerSpawn
 @onready var player_hud: PlayerHUD = $CanvasLayer/PlayerHUD
 @onready var memory_panel: MemoryPanel = $CanvasLayer/MemoryPanel
+@onready var tutorial_prompt: TutorialPrompt = $CanvasLayer/TutorialPrompt
+@onready var tutorial_controller: TutorialController = $TutorialController
 
 var _common_enemy_spawns: Array[Dictionary] = []
 var _encounter_spawn_ids: Dictionary = {}
@@ -21,6 +23,7 @@ func _ready() -> void:
 	_connect_objective_signals()
 	_configure_player_spawn()
 	_bind_player_hud()
+	tutorial_controller.configure(player, player_hud, tutorial_prompt)
 	if not memory_panel.memory_closed.is_connected(
 		_on_memory_panel_closed
 	):
@@ -35,11 +38,13 @@ func _ready() -> void:
 		)
 		if existing_core != null:
 			player_hud.observe_core(existing_core)
+			tutorial_controller.observe_core(existing_core)
 
 	for object: Node in objects.get_children():
 		var altar: RespawnAltar = object as RespawnAltar
 		if altar != null:
 			player_hud.observe_altar(altar)
+			tutorial_controller.observe_altar(altar)
 		var memory: MemoryFragment = object as MemoryFragment
 		if memory != null and not memory.is_queued_for_deletion():
 			_observe_memory(memory)
@@ -181,6 +186,7 @@ func _bind_player_hud() -> void:
 
 func _observe_memory(memory: MemoryFragment) -> void:
 	player_hud.observe_memory(memory)
+	tutorial_controller.observe_memory(memory)
 	if not memory.memory_opened.is_connected(_on_memory_opened):
 		memory.memory_opened.connect(_on_memory_opened)
 
@@ -197,12 +203,14 @@ func _on_memory_opened(
 		player.exit_reading_memory()
 		return
 	player_hud.set_memory_panel_active(true)
+	tutorial_controller.set_memory_panel_active(true)
 	get_tree().paused = true
 
 
 func _on_memory_panel_closed(_memory_id: StringName) -> void:
 	player.exit_reading_memory()
 	player_hud.set_memory_panel_active(false)
+	tutorial_controller.set_memory_panel_active(false)
 	get_tree().paused = false
 
 
@@ -236,6 +244,7 @@ func _on_enemy_died(enemy: Node2D, death_position: Vector2) -> void:
 	pickups.add_child(core)
 	core.global_position = death_position
 	player_hud.observe_core(core)
+	tutorial_controller.observe_core(core)
 
 
 func _find_spawn_id_for_enemy(enemy: Node2D) -> StringName:
