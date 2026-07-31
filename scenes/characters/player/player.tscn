@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/characters/player/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://systems/health_component.gd" id="2_health"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://systems/hurtbox_component.gd" id="5_hurtbox"]
 [ext_resource type="Script" path="res://systems/corruption_component.gd" id="6_corruption"]
 [ext_resource type="Script" path="res://scripts/characters/player/player_corruption.gd" id="7_player_corruption"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/scythe_attack.wav" id="8_scythe_attack"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_body"]
 radius = 20.0
@@ -111,6 +112,10 @@ disabled = true
 libraries = {
 &"": SubResource("AnimationLibrary_scythe")
 }
+
+[node name="ScytheAttackAudio" type="AudioStreamPlayer2D" parent="Visuals/ScythePivot"]
+stream = ExtResource("8_scythe_attack")
+volume_db = -6.0
 
 [node name="BodyCollision" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_body")

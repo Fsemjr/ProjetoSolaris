@@ -11,6 +11,7 @@ signal attack_performed
 @onready var attack_hitbox: HitboxComponent = $AttackHitbox
 @onready var attack_collision: CollisionShape2D = $AttackHitbox/CollisionShape2D
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var attack_audio: AudioStreamPlayer2D = $ScytheAttackAudio
 @onready var attack_cooldown_timer: Timer = $"../../AttackCooldown"
 @onready var attack_owner_node: Node = $"../.."
 @onready var corruption_component: CorruptionComponent = (
@@ -68,6 +69,7 @@ func _try_attack() -> void:
 
 	var playback_speed: float = 1.0 / maxf(attack_duration, 0.001)
 	animation_player.play(&"attack", -1.0, playback_speed)
+	attack_audio.play(0.0)
 	attack_performed.emit()
 
 

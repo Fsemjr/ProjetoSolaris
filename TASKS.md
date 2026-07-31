@@ -1982,7 +1982,7 @@ concluídas no Godot 4.5.1, sem erros no Output ou Debugger.
 
 ## TASK-047 — Adicionar áudio provisório
 
-**Status:** `[ ]`
+**Status:** `[x]`
 
 ### Objetivo
 
@@ -1990,26 +1990,28 @@ Adicionar feedback sonoro temporário para validar a leitura das ações.
 
 ### Requisitos
 
-* utilizar apenas sons próprios, livres ou provisórios devidamente identificados;
-* som de ataque;
-* som de acerto;
-* som de dano no jogador;
-* som de absorção;
-* som de ativação do altar;
-* som de morte;
-* som de desbloqueio da saída;
-* música ambiente provisória opcional;
-* controlar volumes básicos;
+* utilizar o arquivo existente `assets/audio/sfx/scythe_attack.wav` no ataque;
+* tocar o som somente quando um ataque válido realmente começar;
+* respeitar cooldown, estados bloqueados e pausa;
+* preparar e documentar os demais eventos sem inventar assets inexistentes;
+* controlar o volume no `AudioStreamPlayer2D`;
 * evitar sons acumulados ou excessivamente altos;
-* documentar origem e licença dos arquivos.
+* documentar origem e situação da licença do arquivo.
 
 ### Critérios de conclusão
 
-* ações possuem feedback sonoro;
-* volumes são consistentes;
-* sons não duplicam;
-* morte e respawn não deixam áudio preso;
+* o ataque válido possui feedback sonoro sincronizado;
+* cliques recusados não geram áudio;
+* o volume é moderado e o som não duplica;
+* pausa, morte, memória e conclusão bloqueiam novos ataques sonoros;
 * não existem erros.
+
+### Validação
+
+Implementação, validação técnica automatizada e validação manual do jogador
+concluídas no Godot 4.5.1, sem erros no Output ou Debugger. Somente o ataque
+da foice está marcado como implementado, pois é o único evento com asset de
+áudio disponível no projeto.
 
 ---
 
